@@ -1,0 +1,9 @@
+uvicorn
+fastapi
+aiofiles
+imutils
+opencv-python
+pyzmq
+sse-starlette
+pydantic
+starlette
