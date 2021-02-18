@@ -1,6 +1,7 @@
 import zmq
 from threading import Thread
 from queue import Queue
+from fastapi.encoders import jsonable_encoder
 
 
 class SensorSubscriber(Thread):

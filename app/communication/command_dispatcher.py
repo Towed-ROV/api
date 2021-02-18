@@ -29,6 +29,7 @@ class CommandDispatcher(Thread):
             try:
                 cmd = self.cmd_queue.get()
                 self.send(cmd)
+                self.cmd_queue.task_done()
                 response = self.recv()
             except KeyboardInterrupt:
                 pass

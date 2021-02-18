@@ -6,12 +6,11 @@ import threading
 import socket
 import queue
 
-
 class VideoClient(threading.Thread):
-    def __init__(self, image_queue, host="192.168.1.119", port=1337):
+    def __init__(self, image_queue, exit_flag, host="192.168.1.119", port=1337):
         threading.Thread.__init__(self)
         self.image_queue = image_queue
-        self.is_running = False
+        self.exit_flag = exit_flag
         self.host = host
         self.port = port
         self.connection = socket.socket(
@@ -22,7 +21,8 @@ class VideoClient(threading.Thread):
     def connect(self):
         try:
             self.connection.connect((self.host, self.port))
-            self.is_running = True
+            print("[STARTED] VideoClient")
+
         except TimeoutError:
             print("Connection : TimeoutError: ", self.host, ":", self.port)
 
@@ -32,11 +32,13 @@ class VideoClient(threading.Thread):
             self.is_running = False
         except Exception:
             print("Cant close shitt")
+        finally:
+            print("[STOPPED] VideoClient")
 
     def run(self):
         self.connect()
         try:
-            while self.is_running:
+            while not self.exit_flag.is_set():
                 self.image_queue.put(self.get_frame())
         except Exception:
             print("Exception")
@@ -63,16 +65,32 @@ if __name__ == "__main__":
     from collections import deque
 
     img_queue = queue.Queue(maxsize=15)
+    exit_flag = threading.Event()
 
-    cv = VideoClient(img_queue, "192.168.1.118", 1337)
+    cv = VideoClient(img_queue, exit_flag, "192.168.1.118", 1337)
     cv.setDaemon(True)
     cv.start()
 
+    def show(im_q):
+        while True:
+            img = im_q.get()
+            cv2.imshow("VIDEO", img)
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
+    
+    t = threading.Thread(target=show, args=(img_queue,))
+    t.setDaemon(True)
+    t.start()
 
-    while True:
-        img = img_queue.get()
-        cv2.imshow("VIDEO", img)
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
+    run = True
+    while run:
 
+        inp = input("CMD: ")
+
+        if inp == "q":
+            exit_flag.set()
+
+
+
+    
     cv2.destroyAllWindows()
