@@ -1,4 +1,5 @@
 from communication.command_dispatcher import CommandDispatcher
+from schemas.command import Command
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
 from fastapi import APIRouter
@@ -10,10 +11,6 @@ command_queue = Queue()
 dispatcher = CommandDispatcher(command_queue, host="192.168.1.118", port=7001)
 dispatcher.setDaemon(True)
 dispatcher.start()
-
-class Command(BaseModel):
-    name: str
-    value: int
 
 @router.post("/cmd")
 def post_cmd(cmd: Command):

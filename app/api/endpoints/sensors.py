@@ -1,5 +1,6 @@
 from communication.sensor_subscriber import SensorSubscriber
 from sse_starlette.sse import EventSourceResponse
+from schemas.sensor import Sensor
 from pydantic import BaseModel
 from fastapi import APIRouter, Request
 import queue
