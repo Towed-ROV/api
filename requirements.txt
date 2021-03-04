@@ -7,3 +7,6 @@ pyzmq
 sse-starlette
 pydantic
 starlette
+SQLAlchemy
+async-exit-stack
+async-generator
