@@ -13,13 +13,3 @@ class Setting(SettingBase):
     
     class Config:
         orm_mode = True
-
-
-# class SensorSchema(BaseModel):
-#     id: int
-#     name: str
-#     # origin: str
-#     # port: str
-#     # role: str
-#     # is_enabled: bool
-    

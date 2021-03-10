@@ -30,7 +30,6 @@ settings = [
         "role": "pub",
         "port": "a4"
     },
-    
 ]
 
 class SensorSetting(BaseModel):

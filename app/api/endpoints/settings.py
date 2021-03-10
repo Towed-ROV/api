@@ -7,12 +7,6 @@ from pydantic import BaseModel
 from crud import crud
 from schemas.setting import Setting, SettingCreate
 
-# from ..dependencies import get_db
-
-# from .db.database import engine, SessionLocal
-# from .app.db.database import engine, SessionLocal
-
-
 def get_db() -> Generator:
     try:
         db = SessionLocal()
