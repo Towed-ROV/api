@@ -8,15 +8,19 @@ import zmq
 
 router = APIRouter()
 command_queue = Queue()
-dispatcher = CommandDispatcher(command_queue, host="192.168.1.118", port=7001)
+dispatcher = CommandDispatcher(command_queue, host="192.168.0.102", port=8764)
 dispatcher.setDaemon(True)
 dispatcher.start()
 
-@router.post("/cmd")
+@router.post("/")
 def post_cmd(cmd: Command):
     command = jsonable_encoder(cmd)
-    command_queue.put(command)
-    return {"code": "success", "sent": command}
+    payload = {
+        "payload_name": "commands",
+        "payload_data":  [command]
+    }
+    command_queue.put(payload)
+    return {"code": "success", "sent": payload}
 
 """ 
 One could actually use the send / recv directly in the command-endpoints,

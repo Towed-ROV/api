@@ -31,6 +31,7 @@ class CommandDispatcher(Thread):
                 self.send(cmd)
                 self.cmd_queue.task_done()
                 response = self.recv()
+                print("Jørgen says: ", response)
             except KeyboardInterrupt:
                 pass
 

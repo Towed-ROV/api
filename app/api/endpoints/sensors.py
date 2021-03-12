@@ -12,7 +12,7 @@ import time
 
 router = APIRouter()
 sensor_queue = queue.Queue()
-sensor_sub = SensorSubscriber(sensor_queue, host="192.168.1.118", port=8001)
+sensor_sub = SensorSubscriber(sensor_queue, host="192.168.0.102", port=8765)
 sensor_sub.setDaemon(True)
 sensor_sub.start()
 
@@ -45,7 +45,7 @@ def toggle_recording():
     is_recording = not is_recording
     
     if is_recording:
-        save_queue = queue.Queue()
+        save_queue = queue.Queue() # enforce new queue everytime cus of slow garbage collection or something
         saver_connction.start(save_queue, exit_flag)
     else:
         saver_connction.stop(save_queue, exit_flag)
@@ -56,7 +56,7 @@ def toggle_recording():
 @router.get('/data')
 async def sensor_data(request: Request):
     async def sensor_data_generator():
-        prev_data = "INIT"
+        prev_data = {"payload_name": "default", "payload_data": []}
         global is_recording
         while True:
             if await request.is_disconnected():
@@ -68,7 +68,7 @@ async def sensor_data(request: Request):
                     try:
                         save_queue.put_nowait(data)
                     except queue.Full:
-                        print("full ..")
+                        print("Full ..")
             except queue.Empty:
                 data = prev_data
             yield {"event": "data", "data": json.dumps(data)}

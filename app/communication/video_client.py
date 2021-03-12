@@ -5,6 +5,7 @@ import cv2
 import threading
 import socket
 import queue
+import time
 
 class VideoClient(threading.Thread):
     def __init__(self, image_queue, exit_flag, host="192.168.1.119", port=1337):
@@ -37,13 +38,11 @@ class VideoClient(threading.Thread):
 
     def run(self):
         self.connect()
-        try:
-            while not self.exit_flag.is_set():
-                self.image_queue.put(self.get_frame())
-        except Exception:
-            print("Exception")
-        finally:
-            self.disconnect()
+        time.sleep(2)
+        while not self.exit_flag.is_set():
+            frm = self.get_frame()
+            self.image_queue.put(frm)
+        self.disconnect()
 
     def get_frame(self):
         while len(self.data) < self.PAYLOAD_SIZE:
@@ -62,35 +61,19 @@ class VideoClient(threading.Thread):
 
 if __name__ == "__main__":
 
-    from collections import deque
-
     img_queue = queue.Queue(maxsize=15)
     exit_flag = threading.Event()
 
-    cv = VideoClient(img_queue, exit_flag, "192.168.1.118", 1337)
+    cv = VideoClient(img_queue, exit_flag, "192.168.0.102", 1337)
     cv.setDaemon(True)
     cv.start()
 
-    def show(im_q):
-        while True:
-            img = im_q.get()
-            cv2.imshow("VIDEO", img)
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                break
-    
-    t = threading.Thread(target=show, args=(img_queue,))
-    t.setDaemon(True)
-    t.start()
-
-    run = True
-    while run:
-
-        inp = input("CMD: ")
-
-        if inp == "q":
-            exit_flag.set()
-
-
+    while True:
+        img = img_queue.get()
+        cv2.imshow("VIDEO", img)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+        img_queue.task_done()
 
     
     cv2.destroyAllWindows()
