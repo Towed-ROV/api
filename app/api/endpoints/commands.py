@@ -15,9 +15,14 @@ dispatcher.start()
 @router.post("/")
 def post_cmd(cmd: Command):
     command = jsonable_encoder(cmd)
+    if command["toSystem"]:
+        command["value"] = bool(command["value"])
     payload = {
         "payload_name": "commands",
-        "payload_data":  [command]
+        "payload_data":  [{
+            "name": command["name"],
+            "value": command["value"]
+        }]
     }
     command_queue.put(payload)
     return {"code": "success", "sent": payload}

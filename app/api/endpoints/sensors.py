@@ -16,6 +16,8 @@ sensor_sub = SensorSubscriber(sensor_queue, host="192.168.0.102", port=8765)
 sensor_sub.setDaemon(True)
 sensor_sub.start()
 
+# 10.22.186.157
+# 192.168.0.102
 save_queue = None
 exit_flag = threading.Event()
 saver_connction = DataSaverConnection()
@@ -61,7 +63,7 @@ async def sensor_data(request: Request):
         while True:
             if await request.is_disconnected():
                 break
-            await asyncio.sleep(0.05) # TODO: Checkout tunings, freewheeling is troublebound
+            await asyncio.sleep(0.001) # TODO: Checkout tunings, freewheeling is troublebound
             try:
                 data = sensor_queue.get(block=False) #
                 if is_recording:
@@ -72,5 +74,5 @@ async def sensor_data(request: Request):
             except queue.Empty:
                 data = prev_data
             yield {"event": "data", "data": json.dumps(data)}
-            prev_data = data
+            
     return EventSourceResponse(sensor_data_generator())
