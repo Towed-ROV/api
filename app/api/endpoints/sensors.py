@@ -63,7 +63,7 @@ async def sensor_data(request: Request):
         while True:
             if await request.is_disconnected():
                 break
-            await asyncio.sleep(0.001) # TODO: Checkout tunings, freewheeling is troublebound
+            await asyncio.sleep(0.05) # TODO: Checkout tunings, freewheeling is troublebound
             try:
                 data = sensor_queue.get(block=False) #
                 if is_recording:
