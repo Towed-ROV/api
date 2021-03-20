@@ -1,5 +1,6 @@
 uvicorn
 fastapi
+pandas
 aiofiles
 imutils
 opencv-python
