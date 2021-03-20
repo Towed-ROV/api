@@ -14,9 +14,7 @@ def get_db() -> Generator:
     finally:
         db.close()
 
-
 router = APIRouter()
-
 
 @router.get("/", response_model=List[Setting])
 def get_settings(db: Session = Depends(get_db)):

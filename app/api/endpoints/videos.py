@@ -7,10 +7,9 @@ from communication.video_connection import VideoConnection
 import cv2
 
 router = APIRouter()
-
 img_queue = Queue()
 exit_flag = Event()
-video_connection = VideoConnection(exit_flag, img_queue)
+video_connection = VideoConnection("192.168.0.0", 1337, exit_flag, img_queue)
 
 @router.get("/video_start")
 def video_start():

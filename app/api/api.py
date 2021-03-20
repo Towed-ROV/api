@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 # from api.endpoints import videos, commands, sensors
-from api.endpoints import videos, sensors, commands
+from api.endpoints import sensors, commands, videos
 
 api_router = APIRouter()
 api_router.include_router(videos.router, prefix="/videos", tags=["videos"])

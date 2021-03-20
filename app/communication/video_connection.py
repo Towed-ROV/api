@@ -1,13 +1,15 @@
 from communication.video_client import VideoClient
 
 class VideoConnection:
-    def __init__(self, exit_flag, img_queue):
+    def __init__(self, host, port, exit_flag, img_queue):
+        self.host = host
+        self.port = port
         self.exit_flag = exit_flag
         self.img_queue = img_queue
 
     def start(self):
         self.exit_flag.clear()
-        vc = VideoClient(self.img_queue, self.exit_flag, "192.168.0.102", 1337)
+        vc = VideoClient(self.img_queue, self.exit_flag, self.host, self.port)
         vc.setDaemon(True)
         vc.start()
 

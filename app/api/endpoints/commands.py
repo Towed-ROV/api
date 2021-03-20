@@ -8,7 +8,7 @@ import zmq
 
 router = APIRouter()
 command_queue = Queue()
-dispatcher = CommandDispatcher(command_queue, host="192.168.0.102", port=8764)
+dispatcher = CommandDispatcher(command_queue, host="192.168.1.78", port=7001)
 dispatcher.setDaemon(True)
 dispatcher.start()
 
