@@ -17,5 +17,5 @@ pip install -r requirements.txt
 ## Init
 ```python
 # cd app, then
-python3 uvicorn main:app --reload
+uvicorn main:app --reload
 ```
