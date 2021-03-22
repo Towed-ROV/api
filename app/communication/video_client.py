@@ -2,14 +2,16 @@ import numpy as np
 import struct
 import pickle
 import cv2
-import threading
+from multiprocessing import Process, Event, Queue, Pipe
+
+# import threading
 import socket
 import queue
 import time
 
-class VideoClient(threading.Thread):
+class VideoClient(Process):
     def __init__(self, image_queue, exit_flag, host="192.168.1.119", port=1337):
-        threading.Thread.__init__(self)
+        Process.__init__(self)
         self.image_queue = image_queue
         self.exit_flag = exit_flag
         self.host = host
@@ -41,7 +43,7 @@ class VideoClient(threading.Thread):
         time.sleep(2)
         while not self.exit_flag.is_set():
             frm = self.get_frame()
-            self.image_queue.put(frm)
+            self.image_queue.send(frm)
         self.disconnect()
 
     def get_frame(self):
@@ -61,19 +63,19 @@ class VideoClient(threading.Thread):
 
 if __name__ == "__main__":
 
-    img_queue = queue.Queue(maxsize=15)
-    exit_flag = threading.Event()
+    # img_queue = Queue(maxsize=55)
+    recv_queue, send_queue = Pipe(duplex=False)
+    exit_flag = Event()
 
-    cv = VideoClient(img_queue, exit_flag, "192.168.0.102", 1337)
-    cv.setDaemon(True)
+    cv = VideoClient(send_queue, exit_flag, "192.168.1.118", 1337)
+    cv.daemon = True
     cv.start()
 
     while True:
-        img = img_queue.get()
+        img = recv_queue.recv()
         cv2.imshow("VIDEO", img)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
-        img_queue.task_done()
 
     
     cv2.destroyAllWindows()

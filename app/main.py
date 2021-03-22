@@ -1,10 +1,10 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, WebSocket
 from api.api import api_router
 from starlette.middleware.cors import CORSMiddleware
 # from db.session import engine
 # from models import setting
-
-
+import asyncio
+import random
 # setting.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
@@ -22,4 +22,9 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
+
+
 app.include_router(api_router)
+
+
+

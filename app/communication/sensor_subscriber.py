@@ -1,20 +1,20 @@
 import zmq
 from threading import Thread
+from multiprocessing import Process
 from queue import Queue
-from fastapi.encoders import jsonable_encoder
+import time
 
-
-class SensorSubscriber(Thread):
-    def __init__(self, sensor_queue, host: str, port: int, topic: str = ""):
-        Thread.__init__(self)
-        self.ctx = zmq.Context()
-        self.connection = self.ctx.socket(zmq.SUB)
-        self.sensor_queue = sensor_queue
-        self.connection.subscribe(topic)
+class SensorSubscriber(Process):
+    def __init__(self, data_queue, host: str, port: int):
+        Process.__init__(self)
+        self.data_queue = data_queue
+        self.connection = None
         self.host = host
         self.port = port
 
-    def connect(self):
+    def init(self):
+        self.connection = zmq.Context().socket(zmq.SUB)
+        self.connection.subscribe("")
         self.connection.connect(f"tcp://{self.host}:{self.port}")
         print("[STARTED] SensorSubscriber")
 
@@ -22,11 +22,17 @@ class SensorSubscriber(Thread):
         return self.connection.recv_json()
 
     def run(self):
-        self.connect()
+        self.init()
         while True:
             data = self.recv()
-            self.sensor_queue.put(data)
+            self.data_queue.send(data)
 
 
 if __name__ == "__main__":
-    pass
+
+    # sensor_queue = Queue()
+    sensor_sub = SensorSubscriber(host="192.168.1.118", port=8001)
+    sensor_sub.daemon = True
+    sensor_sub.start()
+    time.sleep(2)
+    print("Done")

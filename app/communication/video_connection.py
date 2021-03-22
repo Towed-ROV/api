@@ -10,9 +10,8 @@ class VideoConnection:
     def start(self):
         self.exit_flag.clear()
         vc = VideoClient(self.img_queue, self.exit_flag, self.host, self.port)
-        vc.setDaemon(True)
+        vc.daemon = True
         vc.start()
 
     def stop(self):
         self.exit_flag.set()
-        self.img_queue.queue.clear()
