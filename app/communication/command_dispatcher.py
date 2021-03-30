@@ -30,7 +30,7 @@ class CommandDispatcher(Thread):
                 cmd = self.cmd_queue.get()
                 self.send(cmd)
                 self.cmd_queue.task_done()
-                response = self.recv()
+                _ = self.recv() # ROV Response
             except KeyboardInterrupt:
                 pass
 

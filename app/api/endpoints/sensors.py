@@ -1,28 +1,34 @@
 from communication.sensor_subscriber import SensorSubscriber
 from communication.data_saver_connection import DataSaverConnection
+from communication.data_receiver import PayloadReceiver
 from sse_starlette.sse import EventSourceResponse
-from schemas.sensor import Sensor
-from pydantic import BaseModel
-from fastapi import APIRouter, Request, WebSocket
-from multiprocessing import Pipe, Event
+from fastapi import APIRouter, Request
+from multiprocessing import Queue
+import time
 import queue
 import asyncio
 import threading
 import json
-import time
-
-import random
-from starlette.websockets import WebSocketDisconnect
+import pickle
 
 router = APIRouter()
-recv_q, send_q = Pipe(duplex=False)
-sensor_sub = SensorSubscriber(send_q, host="192.168.1.118", port=8001)
+
+data_queue_1 = Queue(maxsize=15)
+sensor_sub = SensorSubscriber(data_queue_1, host="192.168.1.118", port=8001)
 sensor_sub.start()
 
+data_queue_2 = Queue(maxsize=15)
+sensor_sub = SensorSubscriber(data_queue_2, host="192.168.1.118", port=8002)
+sensor_sub.start()
+
+payload_receiver = PayloadReceiver()
+payload_receiver.add_queue(data_queue_1)
+payload_receiver.add_queue(data_queue_2)
+
 save_queue = None
-exit_flag = threading.Event()
-saver_connction = DataSaverConnection()
 is_recording = False
+exit_flag = threading.Event()
+saver_connection = DataSaverConnection()
 
 @router.get("/toggle_recording")
 def toggle_recording():
@@ -31,74 +37,55 @@ def toggle_recording():
     is_recording = not is_recording
     if is_recording:
         save_queue = queue.Queue() # enforce new queue everytime cus of slow garbage collection or something
-        saver_connction.start(save_queue, exit_flag)
+        saver_connection.start(save_queue, exit_flag)
     else:
-        saver_connction.stop(save_queue, exit_flag)
+        saver_connection.stop(save_queue, exit_flag)
+        save_queue = None
     return {"is_recording": is_recording}
 
 @router.get('/stream')
 async def sensor_data(request: Request):
     async def sensor_data_generator():
-        prev_data = {"payload_name": "default", "payload_data": []}
-        global is_recording
         print("[OPEN] SSE")
+        global is_recording
+        WAIT_DELAY = 0.05
+        skips = 0
+        counter_skip = 0
+        counter_sent = 0
+        start = time.time()
         while True:
             if await request.is_disconnected():
                 break
-            await asyncio.sleep(0.01) # TODO: Checkout tunings, freewheeling is troublebound
-            if recv_q.poll(0.01):
-                data = recv_q.recv() #
-                if is_recording: _save(data)
+            payload = payload_receiver.get_all()
+            if payload is not None:
+                if is_recording: _save(payload)
+                yield {"event": "stream", "data": json.dumps(payload)}
+                counter_sent = counter_sent + 1
             else:
-                data = prev_data
-            yield {"event": "stream", "data": json.dumps(data)}
+                counter_skip = counter_skip + 1
+            
+            if ((time.time() - start) > 5):
+                print("TIME________: ", str(time.time() - start))
+                print("Times sent  : ", str(counter_sent))
+                print("Times skips : ", str(counter_skip))
+                counter_sent = 0
+                counter_skip = 0
+                start = time.time()
+            await asyncio.sleep(0.075)
+                
+        print("SKIPS: ", str(skips))
         print("[CLOSE] SSE")
     return EventSourceResponse(sensor_data_generator())
 
-def _save(data):
-    try:
-        save_queue.put_nowait(data)
-    except queue.Full:
-        print("Full ..")
 
-# @router.websocket("/ws/sensor")
-# async def websocket_endpoint(websocket: WebSocket):
-#     print("[STARTED] WS Sensor")
-#     await websocket.accept()
-#     global is_recording
-#     while True:
-#         try:
-#             try:
-#                 data = sensor_queue.get(block=False)
-#                 if is_recording: _save(data)
-#                 await websocket.send_json(data)
-#             except queue.Empty:
-#                 pass
-#             await asyncio.sleep(0.01)
-#         except Exception as e:
-#             print('error:', e)
-#             break
-#     print('Bye..')
-    
+""" ___________________________HELPERS________________________________ """
 
-# @router.websocket("/ws")
-# async def websocket_endpoint(websocket: WebSocket):
-#     await manager.connect(websocket)
-#     try:
-#         while True:
-#             if recv_q.poll(0):
-#                 data = recv_q.recv()
-#                 if is_recording: _save(data)
-#                 await manager.broadcast_json(data)
-#             await asyncio.sleep(0.01)
-#     except WebSocketDisconnect:
-#         manager.disconnect(websocket)
-#         print("WS Closed.")
-
-# def _save(data):
-#     try:
-#         save_queue.put_nowait(data)
-#     except queue.Full:
-#         print("Full ..")
-
+def _save(payload):
+    if payload is None:
+        return
+    if payload["payload_name"] == "sensor_data":
+        try:
+            save_queue.put_nowait(payload)
+        except queue.Full:
+            print("FULL QUEUE")
 

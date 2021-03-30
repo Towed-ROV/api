@@ -27,7 +27,7 @@ class VideoClient(Process):
             print("[STARTED] VideoClient")
 
         except TimeoutError:
-            print("Connection : TimeoutError: ", self.host, ":", self.port)
+            print("VideoClient TimeoutError: ", self.host, ":", self.port)
 
     def disconnect(self):
         try:
@@ -43,7 +43,7 @@ class VideoClient(Process):
         time.sleep(2)
         while not self.exit_flag.is_set():
             frm = self.get_frame()
-            self.image_queue.send(frm)
+            self.image_queue.put(frm)
         self.disconnect()
 
     def get_frame(self):

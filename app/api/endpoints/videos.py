@@ -2,15 +2,15 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 from threading import Event
 import queue
-from multiprocessing import Event, Pipe
+from multiprocessing import Event, Pipe, Queue
 from starlette.responses import StreamingResponse
 from communication.video_connection import VideoConnection
 import cv2
 
 router = APIRouter()
-recv_queue, send_queue = Pipe(duplex=False)
+img_queue = Queue(maxsize=30)
 exit_flag = Event()
-video_connection = VideoConnection("192.168.1.118", 1337, exit_flag, send_queue)
+video_connection = VideoConnection("192.168.1.118", 1337, exit_flag, img_queue)
 is_save = False
 
 @router.get("/video_start")
@@ -34,13 +34,14 @@ async def frame_streamer():
     def frame_generator():
         global is_save
         while True:
-            if recv_queue.poll(0.025):
-                img = recv_queue.recv()
+            try:
+                img = img_queue.get_nowait()
                 if is_save: _save(img)
                 _, frame_buffer = cv2.imencode('.jpg', img)
                 frame_bytes = frame_buffer.tobytes()
-            else: continue
-            yield (b"--frame\r\nContent-Type:image/jpeg\r\n\r\n" + frame_bytes + b"\r\n")
+                yield (b"--frame\r\nContent-Type:image/jpeg\r\n\r\n" + frame_bytes + b"\r\n")
+            except queue.Empty:
+                pass
     return StreamingResponse(frame_generator(), media_type="multipart/x-mixed-replace; boundary=frame")
 
 def _save(img):

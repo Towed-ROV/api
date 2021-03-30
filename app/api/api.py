@@ -1,5 +1,4 @@
 from fastapi import APIRouter
-# from api.endpoints import videos, commands, sensors
 from api.endpoints import sensors, commands, videos
 
 api_router = APIRouter()

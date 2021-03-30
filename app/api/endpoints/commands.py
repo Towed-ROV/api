@@ -1,10 +1,8 @@
 from communication.command_dispatcher import CommandDispatcher
 from schemas.command import Command
 from fastapi.encoders import jsonable_encoder
-from pydantic import BaseModel
 from fastapi import APIRouter
 from queue import Queue
-import zmq
 
 router = APIRouter()
 command_queue = Queue()
@@ -14,17 +12,18 @@ dispatcher.start()
 
 @router.post("/")
 def post_cmd(cmd: Command):
-    command = jsonable_encoder(cmd)
-    if command["toSystem"]:
-        command["value"] = bool(command["value"])
+    print("CMD: ", cmd)
+    if cmd.toSystem:
+        cmd.value = bool(cmd.value)
     payload = {
         "payload_name": "commands",
         "payload_data":  [{
-            "name": command["name"],
-            "value": command["value"]
+            "name": cmd.name,
+            "value": cmd.value
         }]
     }
     command_queue.put(payload)
+    print(payload)
     return {"code": "success", "sent": payload}
 
 """ 
