@@ -1,6 +1,6 @@
 from communication.sensor_subscriber import SensorSubscriber
 from communication.data_saver_connection import DataSaverConnection
-from communication.data_receiver import PayloadReceiver
+from communication.payload_receiver import PayloadReceiver
 from sse_starlette.sse import EventSourceResponse
 from fastapi import APIRouter, Request
 from multiprocessing import Queue
@@ -9,10 +9,10 @@ import queue
 import asyncio
 import threading
 import json
-import pickle
 
 router = APIRouter()
 
+# 
 data_queue_1 = Queue(maxsize=15)
 sensor_sub = SensorSubscriber(data_queue_1, host="192.168.1.118", port=8001)
 sensor_sub.start()
@@ -48,7 +48,6 @@ async def sensor_data(request: Request):
     async def sensor_data_generator():
         print("[OPEN] SSE")
         global is_recording
-        WAIT_DELAY = 0.05
         skips = 0
         counter_skip = 0
         counter_sent = 0
@@ -64,6 +63,7 @@ async def sensor_data(request: Request):
             else:
                 counter_skip = counter_skip + 1
             
+            # DEBUGG HELP
             if ((time.time() - start) > 5):
                 print("TIME________: ", str(time.time() - start))
                 print("Times sent  : ", str(counter_sent))
@@ -71,7 +71,7 @@ async def sensor_data(request: Request):
                 counter_sent = 0
                 counter_skip = 0
                 start = time.time()
-            await asyncio.sleep(0.075)
+            await asyncio.sleep(0.09)
                 
         print("SKIPS: ", str(skips))
         print("[CLOSE] SSE")
