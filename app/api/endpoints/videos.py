@@ -50,17 +50,3 @@ def _save(img):
         cv2.imwrite("./tmp/test_image.jpg", img)
         is_save = False
 
-def _merge_payloads(payload_1, payload_2):
-    # payload_1 = jørgen
-    # payload_2 = sophus
-    if payload_1["payload_name"] == "sensor_data":
-        if payload_2["payload_name"] == "sensor_data":
-            for sensor in payload_2["payload_data"]:
-                payload_1["payload_data"].append(sensor)
-                return payload_1
-    elif payload_1["payload_name"] == "response":
-        return payload_1
-
-
-    
-    
