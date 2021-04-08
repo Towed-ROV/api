@@ -1,5 +1,17 @@
 from pydantic import BaseModel
+from typing import List
 
-class Sensor(BaseModel):
+
+class SensorBase(BaseModel):
     name: str
-    value: int
+    value: float
+class SensorCreate(SensorBase):
+    pass
+
+class Sensor(SensorBase):
+    id: int
+    owner_id: int
+    class Config:
+        orm_mode = True
+class SensorList(SensorBase):
+    l: List[Sensor]

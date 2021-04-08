@@ -1,11 +1,10 @@
-from fastapi import FastAPI, WebSocket
+from fastapi import FastAPI
 from api.api import api_router
 from starlette.middleware.cors import CORSMiddleware
-# from db.session import engine
-# from models import setting
-import asyncio
-import random
-# setting.Base.metadata.create_all(bind=engine)
+from db.session import engine
+from models import setting
+
+setting.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 

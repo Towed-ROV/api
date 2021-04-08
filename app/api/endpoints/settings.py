@@ -1,18 +1,10 @@
-from fastapi.encoders import jsonable_encoder
-from fastapi import APIRouter, Request, Depends
-from db.session import SessionLocal
-from typing import List, Generator
-from sqlalchemy.orm import Session
-from pydantic import BaseModel
-from crud import crud
 from schemas.setting import Setting, SettingCreate
-
-def get_db() -> Generator:
-    try:
-        db = SessionLocal()
-        yield db
-    finally:
-        db.close()
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+from db.database import get_db
+from typing import List
+from crud import crud
+import time
 
 router = APIRouter()
 

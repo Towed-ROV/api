@@ -1,42 +1,54 @@
-from fastapi import APIRouter
+from communication.video_connection import VideoConnection
+from starlette.responses import StreamingResponse
+from multiprocessing import Event, Queue
 from pydantic import BaseModel
+from datetime import datetime
+from fastapi import APIRouter
 from threading import Event
 import queue
-from multiprocessing import Event, Pipe, Queue
-from starlette.responses import StreamingResponse
-from communication.video_connection import VideoConnection
 import cv2
 
 router = APIRouter()
-img_queue = Queue(maxsize=30)
-exit_flag = Event()
-video_connection = VideoConnection("192.168.1.118", 1337, exit_flag, img_queue)
-is_save = False
+# img_queue = Queue(maxsize=30)
+# exit_flag = Event()
+# video_connection = VideoConnection("192.168.1.118", 1337, exit_flag, img_queue)
+# is_save = False
 
-@router.get("/video_start")
+def save_img():
+    # global img_queue
+    # img = img_queue.get()
+    img_name = datetime.now().strftime("%d-%m-%Y %H:%M:%S.%f")[:-4]
+    # cv2.imwrite(f"./tmp/{img_name}.jpg", img)
+    return img_name
+
+@router.get("/start")
 def video_start():
     video_connection.start()
     return {"code": "success!"}
 
-@router.get("/video_stop")
+@router.get("/stop")
 def video_stop():
     video_connection.stop()
     return {"code": "success!"}
 
-@router.get("/video_snapshot")
+@router.get("/snapshot")
 def video_snapshot():
-    global is_save
-    is_save = True
-    return {"code": "success!"}
+    try:
+        img = img_queue.get(timeout=0.25)
+        img_name = datetime.now().strftime("%d-%m-%Y %H:%M:%S.%f")[:-4]
+        cv2.imwrite(f"./tmp/{img_name}.jpg", img)
+        succeeded = True
+    except queue.Empty:
+        succeeded = False
+    return {"succeeded": succeeded, "img_name": img_name}
 
-@router.get("/video")
+@router.get("/feed")
 async def frame_streamer():
     def frame_generator():
         global is_save
         while True:
             try:
                 img = img_queue.get_nowait()
-                if is_save: _save(img)
                 _, frame_buffer = cv2.imencode('.jpg', img)
                 frame_bytes = frame_buffer.tobytes()
                 yield (b"--frame\r\nContent-Type:image/jpeg\r\n\r\n" + frame_bytes + b"\r\n")
@@ -44,9 +56,5 @@ async def frame_streamer():
                 pass
     return StreamingResponse(frame_generator(), media_type="multipart/x-mixed-replace; boundary=frame")
 
-def _save(img):
-    global is_save
-    if is_save:
-        cv2.imwrite("./tmp/test_image.jpg", img)
-        is_save = False
+
 
