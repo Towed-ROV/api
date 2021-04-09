@@ -10,5 +10,5 @@ class Waypoint(Base):
     latitude = Column(Float)
     longitude = Column(Float)
     
-    sensors = relationship("Sensor", back_populates="owner", cascade="all, delete")
+    sensors = relationship("Sensor", back_populates="owner", cascade="all, delete-orphan")
 

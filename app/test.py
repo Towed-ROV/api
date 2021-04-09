@@ -1,22 +1,16 @@
-temp = ["asdasd"]
-
-def yo():
-    val_1 = ["123"]
-    val_2 = []
-    if val_1:
-        return ["1"]
-    elif val_2:
-        return ["2"]
-    else:
-        return None
-
-val = yo()
-
-if val is not None:
-    print("We sendin'")
-print(val)
+import cv2
+from datetime import datetime
+import os
 
 
+TEST_IMAGE = "./tmp/480p.png"
+IMAGE_FOLDER = "./images/"
+
+img_name = datetime.now().strftime("%d-%m-%Y %H_%M_%S.%f")[:-4]
+img_name += ".jpg"
+file_name = IMAGE_FOLDER + img_name
+img = cv2.imread(TEST_IMAGE)
+cv2.imwrite(file_name, img)
 
 # @router.get('/stream')
 # async def sensor_data(request: Request):

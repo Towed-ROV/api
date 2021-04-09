@@ -54,7 +54,13 @@ def create_waypoint(db: Session, sess_id: str, lat: float, lng: float, sensors):
 def update_waypoint(db: Session, setting: SettingCreate):
     pass
 
-def delete_waypoint(db: Session, setting: SettingCreate):
-    pass
-
-""" SENSOR """
+def delete_waypoints_by_session_id(db: Session, session_id: str):
+    waypoints = db.query(Waypoint).filter(Waypoint.session_id == session_id).all()
+    if not waypoints:
+        code = 404
+    else:
+        code = 200
+        for waypoint in waypoints:
+            db.delete(waypoint)
+    db.commit()
+    return {"code": code}
