@@ -8,7 +8,7 @@ class VideoConnection:
         self.host = host
         self.port = port
         self.exit_flag = Event()
-        self.img_queue = Queue()
+        self.img_queue = Queue(maxsize=30) # ~1 seconds
 
     def start(self):
         self.exit_flag.clear()

@@ -1,10 +1,9 @@
-import zmq
-from threading import Thread
 from multiprocessing import Process
+from threading import Thread
 from queue import Queue
+import zmq
 import time
 
-from zmq.sugar.poll import select
 
 class SensorSubscriber(Process):
     def __init__(self, data_queue, host: str, port: int):

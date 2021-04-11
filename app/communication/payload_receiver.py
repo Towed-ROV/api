@@ -3,33 +3,74 @@ from typing import List
 import queue
 import time
 
-DEFAULT_PAYLOAD = {"payload_name": "default", "payload_data": []}
+DEFAULT_PAYLOAD = {"payload_name": "", "payload_data": []}
+RESPONSE = "response"
+SENSOR_DATA = "sensor_data"
 
 class Payload:
     def __init__(self, payload_id, queue):
         self.payload = DEFAULT_PAYLOAD
         self.payload_id = payload_id
         self.queue = queue
+        self.MAX_COPIES = 1
+        self.copies = 0
 
     def get(self):
         try:
-           self.payload = self.queue.get(block=False)
+            self.payload = self.queue.get(block=False)
+            print("Add (NEW) -- | ", self.payload)
         except queue.Empty:
-            pass 
+            self.verify_on("response", self.payload) # Only count valid payloads
+            print("Add (PRV) -- | ", self.payload)
+        finally:
+            self.validate_on("response")
         return self.payload
+
+    @staticmethod
+    def has_data(payload):
+        if payload["payload_data"]:
+            return True
+        return False
+
+    @staticmethod
+    def is_response(payload):
+        return payload["payload_name"] == "response"
+
+    @staticmethod
+    def is_sensor_data(payload):
+        return payload["payload_name"] == "sensor_data"
+
+    def verify_on(self, name, payload):
+        if Payload.has_data(payload):
+            if name == "response":              # Check name
+                if Payload.is_response(payload):# Check payload
+                    self.copies += 1
+        
+    def reset(self):
+        self.payload = DEFAULT_PAYLOAD
+        self.copies = 0
+    
+    def validate_on(self, name):
+        if name == RESPONSE:
+            if self.copies > self.MAX_COPIES:
+                self.reset()
+                print("RESET RESPONSE")
+        elif name == SENSOR_DATA:
+            pass
 
 class PayloadReceiver:
     def __init__(self):
         self.payloads: Payload = []
+        self.known_responses = []
 
     def add_queue(self, input_queue):
         # TODO: Check instance types?
-        temp_id = len(self.payloads)
-        payload = Payload(temp_id, input_queue)
+        _id = len(self.payloads) + 1
+        payload = Payload(_id, input_queue)
         self.payloads.append(payload)
 
-    def add_queues(self, queues: List):
-        for queue in queues:
+    def add_queues(self, input_queues: List):
+        for queue in input_queues:
             self.add_queue(queue)
 
     def get_payloads(self):
@@ -42,6 +83,7 @@ class PayloadReceiver:
 
         # We priorities responses
         if response_payload["payload_data"]:
+            # Max 2 copies of identical responses will be allowed, check Payload-class for more info
             return response_payload
         elif sensor_data_payload["payload_data"]:
             return sensor_data_payload
@@ -69,8 +111,15 @@ class PayloadReceiver:
                     merged_payload["payload_data"].append(sensor)
                     sensor_names.append(sensor_name)
         return merged_payload
+    
+   
 
 if __name__ == "__main__":
+
+    def p(i, x):
+        print("")
+        print(f"[{i}] RETURN: ", x)
+        print("")
 
     sensor_q_1 = Queue()
     sensor_q_2 = Queue()
@@ -79,18 +128,13 @@ if __name__ == "__main__":
     payload_recvr.add_queue(sensor_q_1)
     payload_recvr.add_queue(sensor_q_2)
 
-    payloads = payload_recvr.get_all()
-    print(payloads) # EMPTY
-    print("")
+    p(0, payload_recvr.get_all())
     sensor_q_1.put({"payload_name": "sensor_data", "payload_data": [{"name": "heat", "value": 1}]})
-    sensor_q_2.put({"payload_name": "response", "payload_data": [{"name": "heat1", "success": True}]})
-    payloads = payload_recvr.get_all()
-    print(payloads) # EMPTY
-    payloads = payload_recvr.get_all()
-    print(payloads) # EMPTY
-    payloads = payload_recvr.get_all()
-    print(payloads) # EMPTY
-    payloads = payload_recvr.get_all()
-    print(payloads) # EMPTY
-    payloads = payload_recvr.get_all()
-    print(payloads) # EMPTY
+    sensor_q_2.put({"payload_name": "response", "payload_data": [{"name": "heat", "success": True}]})
+
+
+
+
+
+    for i in range(10):
+        p(i+1, payload_recvr.get_all())
