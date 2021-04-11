@@ -1,13 +1,13 @@
 from sqlalchemy.orm import Session
 # SCHEMAS
 from schemas.setting import SettingCreate
-from schemas.setting import WaypointSessionCreate
+from schemas.waypoint_session import WaypointSessionCreate
 from schemas.waypoint import WaypointCreate, AbstractWaypoint
 from fastapi.encoders import jsonable_encoder
 from schemas.sensor import SensorCreate, SensorList
 # MODELS
 from models.sensor import Sensor
-from models.session import WaypointSession
+from models.waypoint_session import WaypointSession
 from models.setting import Setting
 from models.waypoint import Waypoint
 # SPECIAL FUNCTIONS

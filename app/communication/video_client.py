@@ -1,8 +1,7 @@
-import numpy as np
+from multiprocessing import Process, Event, Queue
 import struct
 import pickle
 import cv2
-from multiprocessing import Process, Event, Queue, Pipe
 
 # import threading
 import socket
@@ -20,6 +19,7 @@ class VideoClient(Process):
             socket.AF_INET, socket.SOCK_STREAM)
         self.data = b""
         self.PAYLOAD_SIZE = struct.calcsize(">L")
+        print("[INIT] Videoclient")
 
     def connect(self):
         try:
@@ -40,7 +40,7 @@ class VideoClient(Process):
 
     def run(self):
         self.connect()
-        time.sleep(2)
+        time.sleep(1)
         while not self.exit_flag.is_set():
             frm = self.get_frame()
             self.image_queue.put(frm)
@@ -63,19 +63,20 @@ class VideoClient(Process):
 
 if __name__ == "__main__":
 
-    # img_queue = Queue(maxsize=55)
-    recv_queue, send_queue = Pipe(duplex=False)
+    img_queue = Queue(maxsize=55)
     exit_flag = Event()
 
-    cv = VideoClient(send_queue, exit_flag, "192.168.1.118", 1337)
+    cv = VideoClient(img_queue, exit_flag, "192.168.1.118", 1337)
     cv.daemon = True
     cv.start()
 
     while True:
-        img = recv_queue.recv()
-        cv2.imshow("VIDEO", img)
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
-
+        try:
+            img = img_queue.get()
+            cv2.imshow("VIDEO", img)
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
+        except queue.Empty:
+            pass
     
     cv2.destroyAllWindows()
