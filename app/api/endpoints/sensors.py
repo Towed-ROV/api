@@ -14,7 +14,7 @@ router = APIRouter()
 
 # 
 data_queue_1 = Queue(maxsize=15)
-sensor_sub = SensorSubscriber(data_queue_1, host="192.168.1.118", port=8001)
+sensor_sub = SensorSubscriber(data_queue_1, host="192.168.0.102", port=8765)
 sensor_sub.start()
 
 data_queue_2 = Queue(maxsize=15)

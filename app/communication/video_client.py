@@ -66,7 +66,7 @@ if __name__ == "__main__":
     img_queue = Queue(maxsize=55)
     exit_flag = Event()
 
-    cv = VideoClient(img_queue, exit_flag, "192.168.1.118", 1337)
+    cv = VideoClient(img_queue, exit_flag, "192.168.0.102", 1337)
     cv.daemon = True
     cv.start()
 

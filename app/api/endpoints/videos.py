@@ -9,7 +9,7 @@ import cv2
 
 router = APIRouter()
 
-video_connection = VideoConnection("192.168.1.118", 1337)
+video_connection = VideoConnection("192.168.0.102", 1337)
 img_queue = video_connection.img_queue
 
 TEST_IMAGE = "./tmp/480p.png"

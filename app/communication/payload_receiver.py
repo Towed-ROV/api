@@ -18,10 +18,10 @@ class Payload:
     def get(self):
         try:
             self.payload = self.queue.get(block=False)
-            print("Add (NEW) -- | ", self.payload)
+            # print("Add (NEW) -- | ", self.payload)
         except queue.Empty:
             self.verify_on("response", self.payload) # Only count valid payloads
-            print("Add (PRV) -- | ", self.payload)
+            # print("Add (PRV) -- | ", self.payload)
         finally:
             self.validate_on("response")
         return self.payload
