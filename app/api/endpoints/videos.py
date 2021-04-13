@@ -1,5 +1,6 @@
 from communication.video_connection import VideoConnection
 from starlette.responses import StreamingResponse
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from datetime import datetime
 from fastapi import APIRouter
@@ -37,6 +38,10 @@ def video_start():
 def video_stop():
     video_connection.stop()
     return {"code": "success!"}
+
+@router.get("/{img_name}")
+def get_img_from_database(*, img_name: str):
+    return FileResponse(IMAGE_FOLDER + img_name)
 
 @router.get("/video_snapshot")
 def video_snapshot():

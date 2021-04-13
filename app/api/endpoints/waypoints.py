@@ -10,7 +10,7 @@ from crud import crud
 
 router = APIRouter()
 
-@router.get("/{waypoint_id}", response_model=Waypoint)
+@router.get("/single/{waypoint_id}", response_model=Waypoint)
 def get_waypoint(waypoint_id: int, db: Session = Depends(get_db)):
     waypoint = crud.get_waypoint(db, waypoint_id=waypoint_id)
     if not waypoint:
@@ -28,7 +28,7 @@ def get_multiple_waypoints(db: Session = Depends(get_db)):
 def get_waypoints_by_session_id(session_id: str, db: Session = Depends(get_db)):
     waypoints = crud.get_waypoints_by_session_id(db, session_id=session_id)
     if not waypoints:
-        raise HTTPException(status_code=404, detail="Waypoints not found")
+        raise HTTPException(status_code=404, detail=f"Waypoints not found with ID: {session_id}")
     return waypoints
 
 @router.post("/", response_model=Waypoint)

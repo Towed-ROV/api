@@ -1,24 +1,22 @@
+from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 # SCHEMAS
-from schemas.setting import SettingCreate
-from schemas.waypoint_session import WaypointSessionCreate
-from schemas.waypoint import WaypointCreate, AbstractWaypoint
-from fastapi.encoders import jsonable_encoder
 from schemas.sensor import SensorCreate, SensorList
+from schemas.setting import SettingCreate
+from schemas.waypoint import WaypointCreate, AbstractWaypoint
+from schemas.waypoint_session import WaypointSessionCreate, WaypointSessionUpdate
 # MODELS
 from models.sensor import Sensor
-from models.waypoint_session import WaypointSession
 from models.setting import Setting
 from models.waypoint import Waypoint
+from models.waypoint_session import WaypointSession
 # SPECIAL FUNCTIONS
 from api.endpoints.videos import save_img
 
 """ SETTING """
 
-
 def get_settings(db: Session, skip: int = 0, limit: int = 100):
     return db.query(Setting).offset(skip).limit(limit).all()
-
 
 def create_setting(db: Session, setting: SettingCreate):
     db_setting = Setting(name=setting.name, origin=setting.origin)
@@ -80,16 +78,16 @@ def delete_waypoints_by_session_id(db: Session, session_id: str):
     return {"code": code}
 
 
-""" SESSION """
-
+""" WAYPOINT SESSIONS """
 
 def get_waypoint_session(db: Session, session_id: str):
-    return db.query(WaypointSession).filter(Session.session_id == session_id).first()
-
+    return db.query(WaypointSession).filter(WaypointSession.session_id == session_id).one_or_none()
 
 def get_waypoint_sessions(db: Session, skip: int = 0, limit: int = 100):
     return db.query(WaypointSession).offset(skip).limit(limit).all()
 
+def get_complete_waypoint_sessions(db: Session, is_complete: bool):
+    return db.query(WaypointSession).filter(WaypointSession.is_complete == is_complete).all()
 
 def create_waypoint_session(db: Session, waypoint_session: WaypointSessionCreate):
     db_wp_session = WaypointSession(session_id=waypoint_session.session_id)
@@ -97,3 +95,24 @@ def create_waypoint_session(db: Session, waypoint_session: WaypointSessionCreate
     db.commit()
     db.refresh(db_wp_session)
     return db_wp_session
+
+def update_waypoint_session(db: Session, waypoint_session: WaypointSessionUpdate):
+        # get the existing data
+    db_wp_session = db.query(WaypointSession).filter(WaypointSession.session_id == waypoint_session.session_id).first()
+    if db_wp_session is None:
+        return None
+
+    # Update model class variable from requested fields 
+    for updateKey, updateValue in vars(waypoint_session).items():
+        setattr(db_wp_session, updateKey, updateValue) if updateValue else None
+
+    db.add(db_wp_session)
+    db.commit()
+    db.refresh(db_wp_session)
+    return db_wp_session
+
+# def utc2local(utc):
+#     # Use this before displaying to client
+#     epoch = time.mktime(utc.timetuple())
+#     offset = datetime.fromtimestamp(epoch) - datetime.utcfromtimestamp(epoch)
+#     return utc + offset
