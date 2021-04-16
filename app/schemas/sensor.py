@@ -10,7 +10,7 @@ class SensorCreate(SensorBase):
 
 class Sensor(SensorBase):
     id: int
-    owner_id: int
+    wp_id: int
     class Config:
         orm_mode = True
 class SensorList(SensorBase):

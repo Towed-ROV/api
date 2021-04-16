@@ -6,7 +6,7 @@ class Sensor(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String)
     value = Column(Float)
-    owner_id = Column(Integer, ForeignKey("waypoints.id"), nullable=False)
-    owner = relationship("Waypoint", back_populates="sensors")    
+    wp_id = Column(Integer, ForeignKey("waypoints.id"), nullable=False)
+    wp = relationship("Waypoint", back_populates="sensors")    
 
     

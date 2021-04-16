@@ -54,7 +54,7 @@ def create_waypoint(db: Session, sess_id: str, lat: float, lng: float, sensors):
     sensor_data = []
     for sensor in sensors:
         new_sensor = Sensor(name=sensor["name"], value=sensor["value"])
-        new_sensor.owner = db_waypoint
+        new_sensor.wp = db_waypoint
         sensor_data.append(new_sensor)
     db.add_all(sensor_data)
     db.commit()

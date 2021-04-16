@@ -16,7 +16,6 @@ class WaypointSession(WaypointSessionBase):
     id: int
     created_at: datetime
     is_complete: bool
-    # owner_id: int
 
     class Config:
         orm_mode = True

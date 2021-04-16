@@ -10,8 +10,6 @@ class Waypoint(Base):
     img_name = Column(String)
     latitude = Column(Float)
     longitude = Column(Float)
-
-    sensors = relationship("Sensor", back_populates="owner",
+    sensors = relationship("Sensor", back_populates="wp",
                            cascade="all, delete-orphan")
-    # owner_id = Column(Integer, ForeignKey("sessions.id"), nullable=False)
-    # owner = relationship("Session", back_populates="waypoints")
+

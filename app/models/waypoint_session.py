@@ -8,5 +8,3 @@ class WaypointSession(Base):
     session_id = Column(String, unique=True, index=True, nullable=False)
     created_at = Column(DateTime(timezone=False), server_default=func.now())
     is_complete = Column(Boolean, unique=False, default=False, nullable=False)
-
-    # waypoints = relationship("Waypoint", back_populates="owner", cascade="all, delete-orphan")

@@ -14,12 +14,11 @@ exit_flag = Event()
 img_queue = Queue(maxsize=30)
 video_connection = VideoConnection("192.168.1.118", 1337, img_queue, exit_flag)
 
-TEST_IMAGE = "./tmp/480p.png"
+TEST_IMAGE = "./tmp/test.png"
 TMP_FOLDER = "./tmp/"
 IMAGE_FOLDER = "./images/"
 
 def save_img():
-    # video_connection.img_queue
     # img = img_queue.get()
     img = cv2.imread(TEST_IMAGE)
     img_name = datetime.now().strftime("%d-%m-%Y %H_%M_%S.%f")[:-4]
