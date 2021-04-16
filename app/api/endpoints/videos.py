@@ -4,14 +4,15 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from datetime import datetime
 from fastapi import APIRouter
-from threading import Event
+from multiprocessing import Queue, Event
 import queue
 import cv2
 
 router = APIRouter()
 
-video_connection = VideoConnection("192.168.1.118", 1337)
-img_queue = video_connection.img_queue
+exit_flag = Event()
+img_queue = Queue(maxsize=30)
+video_connection = VideoConnection("192.168.1.118", 1337, img_queue, exit_flag)
 
 TEST_IMAGE = "./tmp/480p.png"
 TMP_FOLDER = "./tmp/"
@@ -27,23 +28,18 @@ def save_img():
     cv2.imwrite(file_name, img)
     return img_name
 
-@router.get("/video_start")
+@router.get("/start")
 def video_start():
     global img_queue
     video_connection.start()
-    img_queue = video_connection.img_queue # Get the new queue
     return {"code": "success!"}
 
-@router.get("/video_stop")
+@router.get("/stop")
 def video_stop():
     video_connection.stop()
     return {"code": "success!"}
 
-@router.get("/{img_name}")
-def get_img_from_database(*, img_name: str):
-    return FileResponse(IMAGE_FOLDER + img_name)
-
-@router.get("/video_snapshot")
+@router.get("/snap")
 def video_snapshot():
     try:
         img = img_queue.get()
@@ -56,7 +52,7 @@ def video_snapshot():
         succeeded = False
     return {"succeeded": succeeded, "img_name": img_name}
 
-@router.get("/video")
+@router.get("/live")
 async def frame_streamer():
     def frame_generator():
         while True:
@@ -68,6 +64,10 @@ async def frame_streamer():
             except queue.Empty:
                 pass
     return StreamingResponse(frame_generator(), media_type="multipart/x-mixed-replace; boundary=frame")
+
+@router.get("/{img_name}")
+def get_img_from_database(img_name: str):
+    return FileResponse(IMAGE_FOLDER + img_name)
 
 
 

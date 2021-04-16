@@ -19,7 +19,6 @@ class VideoClient(Process):
             socket.AF_INET, socket.SOCK_STREAM)
         self.data = b""
         self.PAYLOAD_SIZE = struct.calcsize(">L")
-        print("[INIT] Videoclient")
 
     def connect(self):
         try:
@@ -31,8 +30,10 @@ class VideoClient(Process):
 
     def disconnect(self):
         try:
-            self.connection.close()
             self.is_running = False
+            self.connection.shutdown(socket.SHUT_RDWR)
+            self.connection.close()
+            self.connection = None
         except Exception:
             print("Cant close shitt")
         finally:
