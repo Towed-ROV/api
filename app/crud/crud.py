@@ -2,7 +2,7 @@ from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 # SCHEMAS
 from schemas.sensor import SensorCreate, SensorList
-from schemas.setting import SettingCreate
+from schemas.setting import SettingCreate, SettingUpdate
 from schemas.waypoint import WaypointCreate, AbstractWaypoint
 from schemas.waypoint_session import WaypointSessionCreate, WaypointSessionUpdate
 # MODELS
@@ -15,19 +15,44 @@ from api.endpoints.videos import save_img
 
 """ SETTING """
 
+def get_setting(db: Session, id: int):
+    return db.query(Setting).filter(Setting.id == id).one_or_none()
+
+def get_setting_by_name(db: Session, name: str):
+    return db.query(Setting).filter(Setting.name == name).one_or_none()
+
 def get_settings(db: Session, skip: int = 0, limit: int = 100):
     return db.query(Setting).offset(skip).limit(limit).all()
 
 def create_setting(db: Session, setting: SettingCreate):
-    db_setting = Setting(name=setting.name, origin=setting.origin)
+    db_setting = Setting(name=setting.name, origin=setting.origin, role=setting.role, port=setting.port)
     db.add(db_setting)
     db.commit()
     db.refresh(db_setting)
     return db_setting
 
+def delete_setting(db: Session, id: int):
+    setting = db.query(Setting).get(id)
+    db.delete(setting)
+    db.commit()
+    return setting
+
+def update_setting(db: Session, setting: SettingUpdate):
+    db_setting = db.query(Setting).filter(Setting.name == setting.name).first()
+    if setting is None:
+        return None
+
+    # Update model class variable from requested fields 
+    for updateKey, updateValue in vars(setting).items():
+        if updateKey == "name": continue # Dont know if necessary, but dont allow name changes
+        setattr(db_setting, updateKey, updateValue) if updateValue else None
+
+    db.add(db_setting)
+    db.commit()
+    db.refresh(db_setting)
+    return db_setting
 
 """ WAYPOINT """
-
 
 def get_waypoint(db: Session, waypoint_id: int):
     return db.query(Waypoint).filter(Waypoint.id == waypoint_id).first()
@@ -82,6 +107,7 @@ def delete_waypoints_by_session_id(db: Session, session_id: str):
 
 def get_waypoint_session(db: Session, session_id: str):
     return db.query(WaypointSession).filter(WaypointSession.session_id == session_id).one_or_none()
+    
 
 def get_waypoint_sessions(db: Session, skip: int = 0, limit: int = 100):
     return db.query(WaypointSession).offset(skip).limit(limit).all()
@@ -110,6 +136,17 @@ def update_waypoint_session(db: Session, waypoint_session: WaypointSessionUpdate
     db.commit()
     db.refresh(db_wp_session)
     return db_wp_session
+
+def delete_waypoint_session_by_session_id(db: Session, session_id: str):
+    wp_sess = db.query(WaypointSession).filter(
+        WaypointSession.session_id == session_id).one_or_none()
+    if not wp_sess:
+        code = 404
+    else:
+        code = 200
+        db.delete(wp_sess)
+    db.commit()
+    return {"code": code}
 
 # def utc2local(utc):
 #     # Use this before displaying to client

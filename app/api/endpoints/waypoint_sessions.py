@@ -50,10 +50,16 @@ def get_multiple_waypoint_sessions(db: Session = Depends(get_db)):
     return waypoints_sessions
 
         
-@router.post("/{session_id}", response_model=WaypointSession)
+@router.put("/{session_id}", response_model=WaypointSession)
 def update_waypoint_session(waypoint_session: WaypointSessionUpdate, db: Session = Depends(get_db)):
     session = crud.update_waypoint_session(db, waypoint_session)
     if not session:
         raise HTTPException(
             status_code=404, detail=f"Could not update session")
     return session
+
+@router.delete("/{session_id}")
+def delete_waypoint_session_by_session_id(session_id: str, db: Session = Depends(get_db)):
+    response = crud.delete_waypoint_session_by_session_id(db, session_id=session_id)
+    if response["code"] == 404: raise HTTPException(status_code=404, detail="WaypointSession not found")
+    elif response["code"] == 200: return {"message": f"Successfully deleted WaypointSession: {session_id}"}

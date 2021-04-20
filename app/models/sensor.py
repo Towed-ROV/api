@@ -4,7 +4,7 @@ from db.base_class import Base
 
 class Sensor(Base):
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String)
+    name = Column(String, unique=True, index=True, nullable=False)
     value = Column(Float)
     wp_id = Column(Integer, ForeignKey("waypoints.id"), nullable=False)
     wp = relationship("Waypoint", back_populates="sensors")    
