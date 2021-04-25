@@ -1,9 +1,7 @@
-from communication.video_client import VideoClient
+from communication.sonar_client import SonarClient
 from multiprocessing import Event, Queue
 
-
-
-class VideoConnection:
+class SonarConnection:
     def __init__(self, host, port, img_queue, exit_flag):
         self.host = host
         self.port = port
@@ -13,7 +11,7 @@ class VideoConnection:
 
     def start(self):
         self.exit_flag.clear()
-        vc = VideoClient(self.img_queue, self.exit_flag, self.host, self.port)
+        vc = SonarClient(self.img_queue, self.host, self.port)
         vc.daemon = True
         vc.start()
         self.is_running = True

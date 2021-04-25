@@ -1,4 +1,5 @@
 from communication.video_connection import VideoConnection
+from communication.sonar_connection import SonarConnection
 from starlette.responses import StreamingResponse
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
@@ -10,9 +11,16 @@ import cv2
 
 router = APIRouter()
 
+
 exit_flag = Event()
 img_queue = Queue(maxsize=30)
+
 video_connection = VideoConnection("192.168.1.118", 1337, img_queue, exit_flag)
+sonar_connection = SonarConnection("127.0.0.1", 5555, img_queue)
+
+TYPE_VIDEO = "VIDEO"
+TYPE_SONAR = "SONAR"
+DISPLAY_TYPE = TYPE_VIDEO # DEFAULT
 
 TEST_IMAGE = "./tmp/test.png"
 TMP_FOLDER = "./tmp/"
@@ -27,15 +35,29 @@ def save_img():
     cv2.imwrite(file_name, img)
     return img_name
 
+@router.post("display/{display_mode}")
+def set_type(display_mode: str):
+    global DISPLAY_TYPE
+    success = False
+    if display_mode == TYPE_VIDEO or display_mode == TYPE_VIDEO:
+        DISPLAY_TYPE = display_mode
+        success = True
+    else:
+        # raise errors
+        pass
+    return {"code": success}
+
 @router.get("/start")
 def video_start():
     global img_queue
-    video_connection.start()
+    if TYPE_VIDEO == TYPE_VIDEO: video_connection.start()
+    if TYPE_VIDEO == TYPE_SONAR: sonar_connection.start()
     return {"code": "success!"}
 
 @router.get("/stop")
 def video_stop():
-    video_connection.stop()
+    if TYPE_VIDEO == TYPE_VIDEO: video_connection.stop()
+    if TYPE_VIDEO == TYPE_SONAR: sonar_connection.stop()
     return {"code": "success!"}
 
 @router.get("/snap")
