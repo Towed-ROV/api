@@ -1,13 +1,16 @@
 from communication.video_connection import VideoConnection
 from communication.sonar_connection import SonarConnection
+
 from starlette.responses import StreamingResponse
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from datetime import datetime
 from fastapi import APIRouter
+
 from multiprocessing import Queue, Event
 import queue
 import cv2
+
 
 router = APIRouter()
 
@@ -38,20 +41,12 @@ def save_img():
     cv2.imwrite(file_name, img)
     return img_name
 
-# @router.post("/{display_type}")
-# def set_type(display_mode: str):
-#     global S_DISPLAY_TYPE
-#     success = False
-#     if display_mode == S_DISPLAY_VIDEO or display_mode == S_DISPLAY_SONAR:
-#         S_DISPLAY_TYPE = display_mode
-#         success = True
-#     return {"success": success, "type": S_DISPLAY_TYPE}
-
 @router.post("/preference")
 def video_preference(video_preference: VideoPreference):
     success = False
     action = video_preference.action
     display_mode = video_preference.display_mode
+    print(video_preference)
     if action == "start":
         if display_mode == S_DISPLAY_VIDEO:
             video_connection.start()
@@ -65,22 +60,8 @@ def video_preference(video_preference: VideoPreference):
             success = True
         elif display_mode == S_DISPLAY_SONAR:
             sonar_connection.stop()
-
             success = True
     return {"success": success, "preference": {"action": action, "display_mode": display_mode}}
-
-# @router.get("/stop")
-# def video_stop(video_preference: VideoPreference):
-#     success = False
-#     action = video_preference.action
-#     mode = video_preference.display_mode
-#     if mode == S_DISPLAY_VIDEO:
-#         video_connection.stop()
-#     elif mode == mode == S_DISPLAY_SONAR:
-#         sonar_connection.stop()
-#     else:
-#         pass
-#     return {"success": success, "display_mode": "XXXXXXX"}
 
 @router.get("/snap")
 def video_snapshot():
