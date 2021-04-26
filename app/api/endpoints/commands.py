@@ -8,7 +8,8 @@ router = APIRouter()
 command_queue = Queue()
 dispatcher = CommandDispatcher(command_queue, host="192.168.1.118", port=7001)
 dispatcher.setDaemon(True)
-dispatcher.start()
+# dispatcher.start()
+
 
 @router.post("/")
 def post_cmd(cmd: Command):
@@ -25,6 +26,7 @@ def post_cmd(cmd: Command):
     command_queue.put(payload)
     print(payload)
     return {"code": "success", "sent": payload}
+
 
 """ 
 One could actually use the send / recv directly in the command-endpoints,
