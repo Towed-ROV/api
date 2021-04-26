@@ -1,6 +1,5 @@
-from communication.sonar_client import SonarClient
 from multiprocessing import Event, Queue
-
+from communication.sonar_subscriber import SonarSubscriber
 class SonarConnection:
     def __init__(self, host, port, img_queue, exit_flag):
         self.host = host
@@ -11,8 +10,7 @@ class SonarConnection:
 
     def start(self):
         self.exit_flag.clear()
-        vc = SonarClient(self.img_queue, self.host, self.port)
-        vc.daemon = True
+        vc = SonarSubscriber(self.img_queue, self.exit_flag, self.host, self.port)
         vc.start()
         self.is_running = True
 
@@ -25,27 +23,41 @@ if __name__ == "__main__":
 
     import cv2
     import queue
-    from video_client import VideoClient
+    import threading
 
-    video_connection = VideoConnection("192.168.1.118", 1337)
-    img_queue = video_connection.img_queue
+    img_queue = Queue()
+    exit_flag = Event()
 
-    inp = input("Enter: ")
-    
-    video_connection.start()
+    sonar_connection = SonarConnection("127.0.0.1", 5555, img_queue, exit_flag)
 
-    while True:
-        try:
-            img = img_queue.get()
+    def endpoint(qq):
+        while True:
+            img = qq.get()
             cv2.imshow("VIDEO", img)
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
-        except queue.Empty:
-            break
-        except KeyboardInterrupt:
-            break
 
-    video_connection.stop()
+    t = threading.Thread(target=endpoint, args=(img_queue,))
+    t.daemon = True
+    t.start()
+
+    sonar_connection.start()
+
+
+    while True:
+        cmd = input("CMD: ")
+
+        if cmd == "status":
+            print("status: ", sonar_connection.is_running)
+
+        if cmd == "start":
+            sonar_connection.start()
+
+        if cmd == "stop":
+            sonar_connection.stop()
+
+        if cmd == "quit":
+            break
+        
 
     inp = input("Finito?")
-        

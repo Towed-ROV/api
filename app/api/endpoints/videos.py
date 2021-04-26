@@ -11,20 +11,23 @@ import cv2
 
 router = APIRouter()
 
-
 exit_flag = Event()
 img_queue = Queue(maxsize=30)
 
 video_connection = VideoConnection("192.168.1.118", 1337, img_queue, exit_flag)
-sonar_connection = SonarConnection("127.0.0.1", 5555, img_queue)
+sonar_connection = SonarConnection("127.0.0.1", 5555, img_queue, exit_flag)
 
-TYPE_VIDEO = "VIDEO"
-TYPE_SONAR = "SONAR"
-DISPLAY_TYPE = TYPE_VIDEO # DEFAULT
+S_DISPLAY_VIDEO = "video"
+S_DISPLAY_SONAR = "sonar"
+S_DISPLAY_TYPE = S_DISPLAY_VIDEO # DEFAULT
 
 TEST_IMAGE = "./tmp/test.png"
 TMP_FOLDER = "./tmp/"
 IMAGE_FOLDER = "./images/"
+
+class VideoPreference(BaseModel):
+    action: str
+    display_mode: str
 
 def save_img():
     # img = img_queue.get()
@@ -35,30 +38,49 @@ def save_img():
     cv2.imwrite(file_name, img)
     return img_name
 
-@router.post("display/{display_mode}")
-def set_type(display_mode: str):
-    global DISPLAY_TYPE
+# @router.post("/{display_type}")
+# def set_type(display_mode: str):
+#     global S_DISPLAY_TYPE
+#     success = False
+#     if display_mode == S_DISPLAY_VIDEO or display_mode == S_DISPLAY_SONAR:
+#         S_DISPLAY_TYPE = display_mode
+#         success = True
+#     return {"success": success, "type": S_DISPLAY_TYPE}
+
+@router.post("/preference")
+def video_preference(video_preference: VideoPreference):
     success = False
-    if display_mode == TYPE_VIDEO or display_mode == TYPE_VIDEO:
-        DISPLAY_TYPE = display_mode
-        success = True
-    else:
-        # raise errors
-        pass
-    return {"code": success}
+    action = video_preference.action
+    display_mode = video_preference.display_mode
+    if action == "start":
+        if display_mode == S_DISPLAY_VIDEO:
+            video_connection.start()
+            success = True
+        elif display_mode == S_DISPLAY_SONAR:
+            sonar_connection.start()
+            success = True
+    elif action == "stop":
+        if display_mode == S_DISPLAY_VIDEO:
+            video_connection.stop()
+            success = True
+        elif display_mode == S_DISPLAY_SONAR:
+            sonar_connection.stop()
 
-@router.get("/start")
-def video_start():
-    global img_queue
-    if TYPE_VIDEO == TYPE_VIDEO: video_connection.start()
-    if TYPE_VIDEO == TYPE_SONAR: sonar_connection.start()
-    return {"code": "success!"}
+            success = True
+    return {"success": success, "preference": {"action": action, "display_mode": display_mode}}
 
-@router.get("/stop")
-def video_stop():
-    if TYPE_VIDEO == TYPE_VIDEO: video_connection.stop()
-    if TYPE_VIDEO == TYPE_SONAR: sonar_connection.stop()
-    return {"code": "success!"}
+# @router.get("/stop")
+# def video_stop(video_preference: VideoPreference):
+#     success = False
+#     action = video_preference.action
+#     mode = video_preference.display_mode
+#     if mode == S_DISPLAY_VIDEO:
+#         video_connection.stop()
+#     elif mode == mode == S_DISPLAY_SONAR:
+#         sonar_connection.stop()
+#     else:
+#         pass
+#     return {"success": success, "display_mode": "XXXXXXX"}
 
 @router.get("/snap")
 def video_snapshot():
@@ -74,7 +96,7 @@ def video_snapshot():
     return {"succeeded": succeeded, "img_name": img_name}
 
 @router.get("/live")
-async def frame_streamer():
+async def live_video_feed():
     def frame_generator():
         while True:
             try:

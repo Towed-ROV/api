@@ -6,7 +6,7 @@ import numpy as np
 import zmq
 import socket
 import queue
-from multiprocessing import Process, Queue
+from multiprocessing import Process, Queue, Event
 import time
 
 class SonarPlotter:
@@ -27,13 +27,14 @@ class SonarPlotter:
 
 
 class SonarSubscriber(Process):
-    def __init__(self, data_queue, host: str, port: int):
+    def __init__(self, data_queue, exit_flag, host: str, port: int):
         Process.__init__(self)
         self.ctx = None
         self.host = host
         self.port = port
         self.connection = None
         self.data_queue = data_queue
+        self.exit_flag = exit_flag
         self.SONAR_IMG_WIDTH = 1000
         self.SONAR_IMG_HEIGHT = 500
         self.SONAR_IMG_WIDTH_HALF = 1000
@@ -51,11 +52,12 @@ class SonarSubscriber(Process):
 
     def run(self):
         self.init()
-        while True:
+        while not self.exit_flag.is_set():
             msg_str = self.recv_str()       # receive raw string from C++
             row = self.msg_to_row(msg_str)  # process string into np.ndarray
             img = self.row_to_img(row)      # insert np.ndarray into top of image
             self.data_queue.put(img)        # send image to client
+        print("EXITING")
 
     def row_to_img(self, row: np.ndarray):
         return self.plotter.pop_push_and_get(row)
@@ -70,12 +72,14 @@ class SonarSubscriber(Process):
         arr[:self.SONAR_IMG_WIDTH_HALF] = left
         arr[self.SONAR_IMG_WIDTH_HALF:] = right
         return arr
+    
 
 
 if __name__ == "__main__":
 
+    exit_flag = Event()
     img_queue = Queue(maxsize=55)
-    sonar_sub = SonarSubscriber(img_queue, host="127.0.0.1", port=5555)
+    sonar_sub = SonarSubscriber(img_queue, exit_flag, host="127.0.0.1", port=5555)
     sonar_sub.start()
 
     print("READY FOR DATA !")
