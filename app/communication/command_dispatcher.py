@@ -1,9 +1,15 @@
 from threading import Thread
+
 import zmq
 
 
 class CommandDispatcher(Thread):
-    """ DOCS """
+    """This class is tailored to represent a ZMQ Requester
+    for sending commands down to the Towed-ROV
+
+    Args:
+        Thread (inherits): subclassed in a limited fashion
+    """
 
     def __init__(self, cmd_queue, host="127.0.0.1", port=1337):
         Thread.__init__(self)
@@ -28,14 +34,16 @@ class CommandDispatcher(Thread):
         while True:
             try:
                 cmd = self.cmd_queue.get()
-                self.send(cmd)
+                self.send(cmd)             # Send to ROV
                 self.cmd_queue.task_done()
-                _ = self.recv() # ROV Response
+                _ = self.recv()            # Recv from ROV
             except KeyboardInterrupt:
                 pass
 
 
 if __name__ == "__main__":
+    
+    """ TESTING """
 
     import queue
     import time

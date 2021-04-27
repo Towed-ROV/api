@@ -6,6 +6,12 @@ import time
 
 
 class SensorSubscriber(Process):
+    """Basic ZMQ subscriber running in a seperate process to poll data from the Towed-ROV
+    
+    SUB / PUB is connectionless, so it doesnt care if you disconnect, it will 
+    continously try to re-read from the socket. So any disconnect / reloads or similar doesnt matter,
+    because the subscriber will always listen for reconnects
+    """
     def __init__(self, data_queue, host: str, port: int):
         Process.__init__(self)
         self.data_queue = data_queue
@@ -32,9 +38,10 @@ class SensorSubscriber(Process):
 
 if __name__ == "__main__":
 
-    # sensor_queue = Queue()
-    sensor_sub = SensorSubscriber(host="192.168.1.118", port=8001)
-    sensor_sub.daemon = True
-    sensor_sub.start()
-    time.sleep(2)
-    print("Done")
+    ctx = zmq.Context()
+    connection = ctx.socket(zmq.SUB)
+    connection.subscribe("")
+    connection.connect("tcp://127.0.0.1:8787")
+
+    for x in range(10):
+        print(connection.recv_string())

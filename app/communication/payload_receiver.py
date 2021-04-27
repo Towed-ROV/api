@@ -8,6 +8,10 @@ RESPONSE = "response"
 SENSOR_DATA = "sensor_data"
 
 class Payload:
+    """This class is tailored to represent a payload,
+    if subsequenct calls to self is called without succes,
+    the previous payload is used
+    """
     def __init__(self, payload_id, queue):
         self.payload = DEFAULT_PAYLOAD
         self.payload_id = payload_id
@@ -18,10 +22,8 @@ class Payload:
     def get(self):
         try:
             self.payload = self.queue.get(block=False)
-            # print("Add (NEW) -- | ", self.payload)
         except queue.Empty:
             self.verify_on("response", self.payload) # Only count valid payloads
-            # print("Add (PRV) -- | ", self.payload)
         finally:
             self.validate_on("response")
         return self.payload
@@ -40,17 +42,21 @@ class Payload:
     def is_sensor_data(payload):
         return payload["payload_name"] == "sensor_data"
 
-    def verify_on(self, name, payload):
-        if Payload.has_data(payload):
-            if name == "response":              # Check name
-                if Payload.is_response(payload):# Check payload
-                    self.copies += 1
-        
     def reset(self):
         self.payload = DEFAULT_PAYLOAD
         self.copies = 0
     
+    def verify_on(self, name, payload):
+        """checks if previous payloads has been used, it limit exceeded the payload is reset """
+        if Payload.has_data(payload):
+            if name == "response":              # Check name
+                if Payload.is_response(payload):# Check payload
+                    self.copies += 1
+    
     def validate_on(self, name):
+        """resets whenever we've re-used the current stored payload too many times
+        if this isnt used, the payload will continously be sent the control-app, even if the sensordata has stopped.
+        """
         if name == RESPONSE:
             if self.copies > self.MAX_COPIES:
                 self.reset()
@@ -59,6 +65,11 @@ class Payload:
             pass
 
 class PayloadReceiver:
+    """ This class is tailored to act as a collector for
+    consuming the data from the various child-payload providers,
+    will continously poll the payloads for data, sort them in order
+    and finally send the through into the control-application. 
+    """
     def __init__(self):
         self.payloads: Payload = []
         self.known_responses = []
@@ -83,7 +94,7 @@ class PayloadReceiver:
 
         # We priorities responses
         if response_payload["payload_data"]:
-            # Max 2 copies of identical responses will be allowed, check Payload-class for more info
+            # Max 2 copies of identical responses will be allowed, check Payload-class for details
             return response_payload
         elif sensor_data_payload["payload_data"]:
             return sensor_data_payload
@@ -115,26 +126,4 @@ class PayloadReceiver:
    
 
 if __name__ == "__main__":
-
-    def p(i, x):
-        print("")
-        print(f"[{i}] RETURN: ", x)
-        print("")
-
-    sensor_q_1 = Queue()
-    sensor_q_2 = Queue()
-    
-    payload_recvr = PayloadReceiver()
-    payload_recvr.add_queue(sensor_q_1)
-    payload_recvr.add_queue(sensor_q_2)
-
-    p(0, payload_recvr.get_all())
-    sensor_q_1.put({"payload_name": "sensor_data", "payload_data": [{"name": "heat", "value": 1}]})
-    sensor_q_2.put({"payload_name": "response", "payload_data": [{"name": "heat", "success": True}]})
-
-
-
-
-
-    for i in range(10):
-        p(i+1, payload_recvr.get_all())
+    pass

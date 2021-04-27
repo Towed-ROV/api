@@ -1,11 +1,13 @@
-from communication.command_dispatcher import CommandDispatcher
-from schemas.command import Command
-from fastapi.encoders import jsonable_encoder
-from fastapi import APIRouter
 from queue import Queue
+
+from communication.command_dispatcher import CommandDispatcher
+from fastapi import APIRouter
+from fastapi.encoders import jsonable_encoder
+from schemas.command import Command
 
 router = APIRouter()
 command_queue = Queue()
+
 dispatcher = CommandDispatcher(command_queue, host="192.168.1.118", port=7001)
 dispatcher.setDaemon(True)
 # dispatcher.start()

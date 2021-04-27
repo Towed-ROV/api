@@ -10,8 +10,13 @@ from multiprocessing import Process, Queue, Event
 import time
 
 class SonarPlotter:
+    """This class is tailored to create a 'image' following the
+    principals of a 'Sliding-Window' (top -> bottom)
+
+    """
     def __init__(self, dimention: tuple = (500, 1000)):
         self.dimention = dimention
+        # color depth is (0-255) thereby use dtype=np.uint8
         self.image = np.zeros(self.dimention, dtype=np.uint8)
 
     def pop_push_and_get(self, line: np.ndarray):
@@ -20,13 +25,20 @@ class SonarPlotter:
         return self.image
 
     def push(self, input_row: np.ndarray):
+        """ inserts a row of pixels at first index """
         self.image = np.insert(arr=self.image, obj=0, values=input_row, axis=0)
 
     def pop(self):
+        """ removes a row of pixels at last index """
         self.image = np.delete(arr=self.image, obj=-1, axis=0)
 
 
 class SonarSubscriber(Process):
+    """[summary]
+
+    Args:
+        Process ([type]): [description]
+    """
     def __init__(self, data_queue, exit_flag, host: str, port: int):
         Process.__init__(self)
         self.ctx = None
@@ -62,12 +74,12 @@ class SonarSubscriber(Process):
     def row_to_img(self, row: np.ndarray):
         return self.plotter.pop_push_and_get(row)
 
-    def msg_to_row(self, msg_str):
+    def msg_to_row(self, numbers_str):
         """ this method highly relies on the stringformating in the SONAR C++ code """
-        msg = msg_str.strip()
-        msg = msg.split(" ")
-        arr = np.array([np.uint8(x) for x in msg])
-        left = np.flipud(arr[:self.SONAR_IMG_WIDTH_HALF])  # reverse
+        numbers_str = numbers_str.strip()
+        numbers = numbers_str.split(" ")
+        arr = np.array([np.uint8(number) for number in numbers], dtype=np.uint8)
+        left = np.flip(arr[:self.SONAR_IMG_WIDTH_HALF])  # reverse
         right = arr[self.SONAR_IMG_WIDTH_HALF:]
         arr[:self.SONAR_IMG_WIDTH_HALF] = left
         arr[self.SONAR_IMG_WIDTH_HALF:] = right

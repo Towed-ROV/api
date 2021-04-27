@@ -1,11 +1,12 @@
-from schemas.setting import Setting, SettingCreate, SettingUpdate
-from fastapi.exceptions import HTTPException
-from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
-from db.database import get_db
-from typing import List
-from crud import crud
 import time
+from typing import List
+
+from crud import crud
+from db.database import get_db
+from fastapi import APIRouter, Depends
+from fastapi.exceptions import HTTPException
+from schemas.setting import Setting, SettingCreate, SettingUpdate
+from sqlalchemy.orm import Session
 
 router = APIRouter()
 

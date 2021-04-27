@@ -1,13 +1,22 @@
 import copy
-from threading import Thread
-from threading import Event
-from functools import reduce
-import pandas as pd
 import queue
 import time
+from functools import reduce
+from threading import Event, Thread
+
+import pandas as pd
+
 
 class DataSaver(Thread):
     def __init__(self, data_queue: queue.Queue, exit_flag: Event):
+        """This class is tailored to act as a CSV-writer.
+        Will handle all logic considering filenames,
+        initial save and adding to exisiting file.
+
+        Args:
+            data_queue (queue.Queue): message queue for the incoming sensordata
+            exit_flag (threading.Event): exit-flag for opting out of the thread
+        """
         Thread.__init__(self)
         self.data_queue = data_queue
         self.is_initial_save = True
@@ -35,14 +44,24 @@ class DataSaver(Thread):
             self._save_data(data)
                 
     def _save_initial_data(self, payload):
+        """method for initializin the CSV-file and writes the header row
+
+        Args:
+            payload (dict): the sensordata
+        """
         self.file_name = "./tmp/" + time.strftime("%d%m%y-%H%M%S") + ".csv"
-        self.columns_names = DataSaver.extract_names(payload)
-        values = DataSaver.extract_values(payload)
+        self.columns_names = DataSaver.extract_names(payload) # header names
+        values = DataSaver.extract_values(payload)            # corresponding values
         df = pd.DataFrame(data=[values], columns=self.columns_names)
         df.to_csv(self.file_name, index=False)
         self.is_initial_save = False
 
     def _save_data(self, payload):
+        """method used after initial save, just adds to an exisisting csv-file
+
+        Args:
+            payload (dict): the sensordata
+        """
         values = DataSaver.extract_values(payload)
         df = pd.DataFrame(data=[values], columns=self.columns_names)
         df.to_csv(self.file_name, mode='a', header=False, index=False)

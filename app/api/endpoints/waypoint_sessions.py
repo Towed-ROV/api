@@ -1,12 +1,14 @@
-from schemas.waypoint_session import WaypointSession, WaypointSessionCreate, WaypointSessionUpdate
+import time
+from typing import List
+
+from crud import crud
+from db.database import get_db
 from fastapi import APIRouter, Depends
 from fastapi.exceptions import HTTPException
-from sqlalchemy.orm import Session
-from db.database import get_db
-from typing import List
-from crud import crud
-import time
+from schemas.waypoint_session import (WaypointSession, WaypointSessionCreate,
+                                      WaypointSessionUpdate)
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session
 
 router = APIRouter()
 
