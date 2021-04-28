@@ -1,13 +1,12 @@
 from multiprocessing import Event, Queue
-from sonar_subscriber import SonarSubscriber
-# from communication.sonar_subscriber import SonarSubscriber
+from communication.sonar_subscriber import SonarSubscriber
+
+
 class SonarConnection:
-     """Basic ZMQ subscriber running in a seperate process to poll data from the Sonar-API
-    
-    SUB / PUB is connectionless, so it doesnt care if you disconnect, it will 
-    continously try to re-read from the socket. So any disconnect / reloads or similar doesnt matter,
-    because the subscriber will always listen for reconnects
+    """This class is tailored to act as a connection between the API and the
+    separate ZMQ Subscriber running in a different process
     """
+
     def __init__(self, host, port, img_queue, exit_flag):
         self.host = host
         self.port = port
@@ -17,14 +16,15 @@ class SonarConnection:
 
     def start(self):
         self.exit_flag.clear()
-        vc = SonarSubscriber(self.img_queue, self.exit_flag, self.host, self.port)
+        vc = SonarSubscriber(
+            self.img_queue, self.exit_flag, self.host, self.port)
         vc.start()
         self.is_running = True
 
     def stop(self):
         self.exit_flag.set()
         self.is_running = False
-        
+
 
 if __name__ == "__main__":
 
@@ -50,7 +50,6 @@ if __name__ == "__main__":
 
     sonar_connection.start()
 
-
     while True:
         cmd = input("CMD: ")
 
@@ -65,6 +64,5 @@ if __name__ == "__main__":
 
         if cmd == "quit":
             break
-        
 
     inp = input("Finito?")

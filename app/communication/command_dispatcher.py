@@ -42,7 +42,7 @@ class CommandDispatcher(Thread):
 
 
 if __name__ == "__main__":
-    
+
     """ TESTING """
 
     import queue

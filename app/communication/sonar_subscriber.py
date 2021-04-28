@@ -9,11 +9,13 @@ import queue
 from multiprocessing import Process, Queue, Event
 import time
 
+
 class SonarPlotter:
-    """This class is tailored to create a 'image' following the
+    """This class is designed to create a 'image' following the
     principals of a 'Sliding-Window' (top -> bottom)
 
     """
+
     def __init__(self, dimention: tuple = (500, 1000)):
         self.dimention = dimention
         # color depth is (0-255) thereby use dtype=np.uint8
@@ -34,11 +36,13 @@ class SonarPlotter:
 
 
 class SonarSubscriber(Process):
-    """[summary]
+    """ZMQ subscriber running in a seperate process to poll data from the Sonar-API
 
-    Args:
-        Process ([type]): [description]
+    SUB / PUB is connectionless, so it doesnt care if you disconnect, it will 
+    continously try to re-read from the socket. So any disconnect / reloads or similar doesnt matter,
+    because the subscriber will always listen for reconnects
     """
+
     def __init__(self, data_queue, exit_flag, host: str, port: int):
         Process.__init__(self)
         self.ctx = None
@@ -50,7 +54,8 @@ class SonarSubscriber(Process):
         self.SONAR_IMG_WIDTH = 1000
         self.SONAR_IMG_HEIGHT = 500
         self.SONAR_IMG_WIDTH_HALF = 1000
-        self.plotter = SonarPlotter((self.SONAR_IMG_HEIGHT, self.SONAR_IMG_WIDTH))
+        self.plotter = SonarPlotter(
+            (self.SONAR_IMG_HEIGHT, self.SONAR_IMG_WIDTH))
 
     def init(self):
         self.ctx = zmq.Context()
@@ -67,7 +72,8 @@ class SonarSubscriber(Process):
         while not self.exit_flag.is_set():
             msg_str = self.recv_str()       # receive raw string from C++
             row = self.msg_to_row(msg_str)  # process string into np.ndarray
-            img = self.row_to_img(row)      # insert np.ndarray into top of image
+            # insert np.ndarray into top of image
+            img = self.row_to_img(row)
             self.data_queue.put(img)        # send image to client
         print("EXITING")
 
@@ -78,38 +84,39 @@ class SonarSubscriber(Process):
         """ this method highly relies on the stringformating in the SONAR C++ code """
         numbers_str = numbers_str.strip()
         numbers = numbers_str.split(" ")
-        arr = np.array([np.uint8(number) for number in numbers], dtype=np.uint8)
+        arr = np.array([np.uint8(number)
+                        for number in numbers], dtype=np.uint8)
         left = np.flip(arr[:self.SONAR_IMG_WIDTH_HALF])  # reverse
         right = arr[self.SONAR_IMG_WIDTH_HALF:]
         arr[:self.SONAR_IMG_WIDTH_HALF] = left
         arr[self.SONAR_IMG_WIDTH_HALF:] = right
         return arr
-    
 
 
 if __name__ == "__main__":
 
     exit_flag = Event()
     img_queue = Queue(maxsize=55)
-    sonar_sub = SonarSubscriber(img_queue, exit_flag, host="127.0.0.1", port=5555)
+    sonar_sub = SonarSubscriber(
+        img_queue, exit_flag, host="127.0.0.1", port=5555)
     sonar_sub.start()
 
     print("READY FOR DATA !")
-    
+
     while True:
         img = img_queue.get()
-        img = cv2.resize(img, (640, 480)) # Good looking GUI size
+        img = cv2.resize(img, (640, 480))  # Good looking GUI size
         cv2.imshow("SONAR IMAGE", img)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
-    
+
     cv2.destroyAllWindows()
 
     # import threading
-    
+
     # plt = SonarPlotter((500, 1000))
     # img_queue = queue.Queue()
-    
+
     # def recv_and_put(input_queue):
     #     context = zmq.Context()
     #     HALF = 500

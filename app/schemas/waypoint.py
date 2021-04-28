@@ -1,6 +1,9 @@
-from schemas.sensor import Sensor
+from typing import Dict, List
+
 from pydantic import BaseModel
-from typing import List, Dict
+
+from schemas.sensor import Sensor
+
 
 class WaypointBase(BaseModel):
     session_id: str
@@ -8,8 +11,10 @@ class WaypointBase(BaseModel):
     latitude: float
     longitude: float
 
+
 class WaypointCreate(WaypointBase):
     pass
+
 
 class Waypoint(WaypointBase):
     id: int
@@ -17,7 +22,6 @@ class Waypoint(WaypointBase):
 
     class Config:
         orm_mode = True
-
 
 
 class AbstractWaypoint(BaseModel):

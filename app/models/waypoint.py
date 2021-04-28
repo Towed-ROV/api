@@ -1,7 +1,6 @@
-from typing import TYPE_CHECKING
-from sqlalchemy import Boolean, Column, Integer, String, ForeignKey, Float
-from sqlalchemy.orm import relationship
 from db.base_class import Base
+from sqlalchemy import Column, Float, Integer, String
+from sqlalchemy.orm import relationship
 
 
 class Waypoint(Base):
@@ -12,4 +11,3 @@ class Waypoint(Base):
     longitude = Column(Float)
     sensors = relationship("Sensor", back_populates="wp",
                            cascade="all, delete-orphan")
-

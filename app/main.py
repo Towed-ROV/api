@@ -1,6 +1,7 @@
 from fastapi import FastAPI
-from api.api import api_router
 from starlette.middleware.cors import CORSMiddleware
+
+from api.api import api_router
 from db.session import engine
 from models import setting
 
@@ -22,8 +23,4 @@ app.add_middleware(
 )
 
 
-
 app.include_router(api_router)
-
-
-

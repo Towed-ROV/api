@@ -5,7 +5,7 @@ import time
 class FPS:
     """
     Outputs the fps upon the frequency __call__ is called
-    
+
     i.e.
     fps = FPS()
     print(fps())

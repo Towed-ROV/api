@@ -1,14 +1,25 @@
-from multiprocessing import Process, Event, Queue
-import struct
 import pickle
+import queue
+import socket
+import struct
+import time
+from multiprocessing import Event, Process, Queue
+
 import cv2
 
-# import threading
-import socket
-import queue
-import time
 
 class VideoClient(Process):
+    """This class represents the a separate TCP client running
+    in a different process, continously reading bytes from the videofeed
+
+    Since the difference between TCP / UDP wasnt really that big in terms of fps,
+    the TCP choice helps with always receive complete images thereby, its not
+    needed to validate images before saving them aswell.
+
+    Args:
+        Process (Process): represent activity that is run in a separate process
+    """
+
     def __init__(self, image_queue, exit_flag, host="192.168.1.119", port=1337):
         Process.__init__(self)
         self.image_queue = image_queue
@@ -26,7 +37,7 @@ class VideoClient(Process):
             print("[STARTED] VideoClient")
 
         except TimeoutError:
-            print("VideoClient TimeoutError: ", self.host, ":", self.port)
+            print("[TimeoutError] VideoClient: ", self.host, ":", self.port)
 
     def disconnect(self):
         try:
@@ -34,8 +45,8 @@ class VideoClient(Process):
             self.connection.shutdown(socket.SHUT_RDWR)
             self.connection.close()
             self.connection = None
-        except Exception:
-            print("Cant close shitt")
+        except Exception as e:
+            print(e)
         finally:
             print("[STOPPED] VideoClient")
 
@@ -48,6 +59,8 @@ class VideoClient(Process):
         self.disconnect()
 
     def get_frame(self):
+        """ reads 1 image from the specified buffer in the memory,
+        returns a valid cv2 image """
         while len(self.data) < self.PAYLOAD_SIZE:
             self.data += self.connection.recv(4096)
         packed_msg_size = self.data[:self.PAYLOAD_SIZE]
@@ -67,7 +80,7 @@ if __name__ == "__main__":
     img_queue = Queue(maxsize=55)
     exit_flag = Event()
 
-    cv = VideoClient(img_queue, exit_flag, "192.168.1.118", 1337)
+    cv = VideoClient(img_queue, exit_flag, "XXXXXXXX", 0000)
     cv.daemon = True
     cv.start()
 
@@ -79,5 +92,5 @@ if __name__ == "__main__":
                 break
         except queue.Empty:
             pass
-    
+
     cv2.destroyAllWindows()

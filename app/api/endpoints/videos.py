@@ -21,13 +21,12 @@ sonar_connection = SonarConnection("127.0.0.1", 5555, img_queue, exit_flag)
 # Video state
 S_DISPLAY_VIDEO = "video"
 S_DISPLAY_SONAR = "sonar"
-S_DISPLAY_TYPE = S_DISPLAY_VIDEO # DEFAULT
+S_DISPLAY_TYPE = S_DISPLAY_VIDEO  # DEFAULT
 
 # Video folders
 TEST_IMAGE = "./tmp/test.png"
 TMP_FOLDER = "./tmp/"
 IMAGE_FOLDER = "./images/"
-
 
 
 def save_img():
@@ -45,6 +44,7 @@ def save_img():
     cv2.imwrite(file_name, img)
     return img_name
 
+
 @router.post("/preference")
 def video_preference(video_preference: VideoPreference):
     """control method for toggle start/stop between streaming
@@ -56,25 +56,33 @@ def video_preference(video_preference: VideoPreference):
     Returns:
         dict: containing local state and wether if request was successfull
     """
+    global S_DISPLAY_TYPE
     success = False
     action = video_preference.action              # START / STOP
     display_mode = video_preference.display_mode  # VIDEO / SONAR
     print(video_preference)
     if action == "start":
         if display_mode == S_DISPLAY_VIDEO:
+            S_DISPLAY_TYPE = S_DISPLAY_VIDEO
             video_connection.start()
             success = True
         elif display_mode == S_DISPLAY_SONAR:
+            S_DISPLAY_TYPE = S_DISPLAY_SONAR
             sonar_connection.start()
             success = True
+
     elif action == "stop":
         if display_mode == S_DISPLAY_VIDEO:
             video_connection.stop()
             success = True
+            S_DISPLAY_TYPE = None
         elif display_mode == S_DISPLAY_SONAR:
             sonar_connection.stop()
             success = True
+            S_DISPLAY_TYPE = None
+
     return {"success": success, "preference": {"action": action, "display_mode": display_mode}}
+
 
 @router.get("/snap")
 def video_snapshot():
@@ -95,22 +103,28 @@ def video_snapshot():
         succeeded = False
     return {"succeeded": succeeded, "img_name": img_name}
 
+
 @router.get("/live")
 async def live_video_feed():
     """Livestream pipeline for receving the video-feed from the sonar / camera
 
     Yields: streams the response body with the encoded image buffer
     """
+    global S_DISPLAY_SONAR
+
     def frame_generator():
         while True:
             try:
                 img = img_queue.get(0.01)
+                if S_DISPLAY_SONAR:
+                    img = cv2.resize(img, (640, 480))
                 _, frame_buffer = cv2.imencode('.jpg', img)
                 frame_bytes = frame_buffer.tobytes()
                 yield (b"--frame\r\nContent-Type:image/jpeg\r\n\r\n" + frame_bytes + b"\r\n")
             except queue.Empty:
                 pass
     return StreamingResponse(frame_generator(), media_type="multipart/x-mixed-replace; boundary=frame")
+
 
 @router.get("/{img_name}")
 def get_img_from_database(img_name: str):
@@ -124,6 +138,3 @@ def get_img_from_database(img_name: str):
         FileResponse: asynchronously streams a file as the response
     """
     return FileResponse(IMAGE_FOLDER + img_name)
-
-
-

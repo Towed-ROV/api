@@ -1,6 +1,8 @@
-from pydantic import BaseModel
 from datetime import datetime
 from typing import List, Optional
+
+from pydantic import BaseModel
+
 
 class WaypointSessionBase(BaseModel):
     session_id: str
@@ -9,8 +11,10 @@ class WaypointSessionBase(BaseModel):
 class WaypointSessionCreate(WaypointSessionBase):
     pass
 
+
 class WaypointSessionUpdate(WaypointSessionBase):
     is_complete: Optional[bool]
+
 
 class WaypointSession(WaypointSessionBase):
     id: int

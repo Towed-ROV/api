@@ -1,9 +1,11 @@
 from communication.video_client import VideoClient
-from multiprocessing import Event, Queue
-
 
 
 class VideoConnection:
+    """This class is tailored to act as a connection between the API and the
+    separate OpenCV video-server running on the Towed-ROV
+    """
+
     def __init__(self, host, port, img_queue, exit_flag):
         self.host = host
         self.port = port
@@ -21,7 +23,7 @@ class VideoConnection:
     def stop(self):
         self.exit_flag.set()
         self.is_running = False
-        
+
 
 if __name__ == "__main__":
 
@@ -29,11 +31,11 @@ if __name__ == "__main__":
     import queue
     from video_client import VideoClient
 
-    video_connection = VideoConnection("192.168.1.118", 1337)
+    video_connection = VideoConnection("XXXXXXXX", 0000)
     img_queue = video_connection.img_queue
 
     inp = input("Enter: ")
-    
+
     video_connection.start()
 
     while True:
@@ -50,4 +52,3 @@ if __name__ == "__main__":
     video_connection.stop()
 
     inp = input("Finito?")
-        
