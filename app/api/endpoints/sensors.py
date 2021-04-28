@@ -18,7 +18,7 @@ sensor_sub = SensorSubscriber(data_queue_1, host="192.168.0.102", port=8765)
 sensor_sub.start()
 
 data_queue_2 = Queue(maxsize=15)
-sensor_sub = SensorSubscriber(data_queue_2, host="192.168.1.118", port=8002)
+sensor_sub = SensorSubscriber(data_queue_2, host="192.168.0.110", port=8765)
 sensor_sub.start()
 
 payload_receiver = PayloadReceiver()

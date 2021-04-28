@@ -22,7 +22,10 @@ class SensorSubscriber(Process):
         print("[STARTED] SensorSubscriber")
 
     def recv(self):
-        return self.connection.recv_json()
+        test = self.connection.recv_json()
+        print(test)
+        
+        return test
 
     def run(self):
         self.init()
