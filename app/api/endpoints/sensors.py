@@ -69,7 +69,7 @@ async def sensor_data(request: Request):
         skips = 0
         counter_skip = 0
         counter_sent = 0
-        start = time.time()
+        # start = time.time()
         while True:
             if await request.is_disconnected():
                 break
@@ -84,13 +84,13 @@ async def sensor_data(request: Request):
 
             # DEBUGG HELP
             # TODO: remove before production release
-            if ((time.time() - start) > 5):
-                print("TIME________: ", str(time.time() - start))
-                print("Times sent  : ", str(counter_sent))
-                print("Times skips : ", str(counter_skip))
-                counter_sent = 0
-                counter_skip = 0
-                start = time.time()
+            # if ((time.time() - start) > 5):
+            #     print("TIME________: ", str(time.time() - start))
+            #     print("Times sent  : ", str(counter_sent))
+            #     print("Times skips : ", str(counter_skip))
+            #     counter_sent = 0
+            #     counter_skip = 0
+            #     start = time.time()
             await asyncio.sleep(0.09)
 
         print("[CLOSE] SSE")
