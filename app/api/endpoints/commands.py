@@ -10,12 +10,11 @@ command_queue = Queue()
 
 dispatcher = CommandDispatcher(command_queue, host="192.168.1.118", port=7001)
 dispatcher.setDaemon(True)
-dispatcher.start()
+# dispatcher.start()
 
 
 @router.post("/")
 def post_cmd(cmd: Command):
-    print("CMD: ", cmd)
     if cmd.toSystem:
         cmd.value = bool(cmd.value)
     payload = {
@@ -26,7 +25,6 @@ def post_cmd(cmd: Command):
         }]
     }
     command_queue.put(payload)
-    print(payload)
     return {"code": "success", "sent": payload}
 
 

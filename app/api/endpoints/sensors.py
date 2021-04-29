@@ -16,12 +16,12 @@ router = APIRouter()
 # FROM THE REMOTE TOWED-ROV
 data_queue_1 = Queue(maxsize=15)
 sensor_sub = SensorSubscriber(data_queue_1, host="192.168.1.118", port=8001)
-sensor_sub.start()
+# sensor_sub.start()
 
 # FROM THE LOCAL SUITCASE BOX
 data_queue_2 = Queue(maxsize=15)
 sensor_sub = SensorSubscriber(data_queue_2, host="192.168.1.118", port=8002)
-sensor_sub.start()
+# sensor_sub.start()
 
 # COLLECTS DATA AND PROCESSES DATA FROM ALL PUBLISHERS
 payload_receiver = PayloadReceiver()

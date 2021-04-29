@@ -25,7 +25,7 @@ def get_settings(db: Session, skip: int = 0, limit: int = 100):
 
 
 def create_setting(db: Session, setting: SettingCreate):
-    db_setting = Setting(name=setting.name, origin=setting.origin,
+    db_setting = Setting(name=setting.name, enabled=setting.enabled, origin=setting.origin,
                          role=setting.role, port=setting.port)
     db.add(db_setting)
     db.commit()
@@ -40,15 +40,14 @@ def delete_setting(db: Session, id: int):
     return setting
 
 
-def update_setting(db: Session, setting: SettingUpdate):
-    db_setting = db.query(Setting).filter(Setting.name == setting.name).first()
+def update_setting(db: Session, sensor_id, setting: SettingUpdate):
+    db_setting = db.query(Setting).filter(Setting.id == sensor_id).first()
     if setting is None:
         return None
     # Update model class variable from requested fields
     for updateKey, updateValue in vars(setting).items():
-        if updateKey == "name":
-            continue  # Dont know if necessary, but dont allow name changes
-        setattr(db_setting, updateKey, updateValue) if updateValue else None
+        setattr(db_setting, updateKey,
+                updateValue) if updateValue is not None else None
     db.add(db_setting)
     db.commit()
     db.refresh(db_setting)
