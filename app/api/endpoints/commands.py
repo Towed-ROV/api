@@ -14,7 +14,17 @@ dispatcher.setDaemon(True)
 
 
 @router.post("/")
-def post_cmd(cmd: Command):
+def send_command_to_rov(cmd: Command):
+    """Accepts a command-payload, and adds it
+    to a command dispatcher, which sends the command through ZMQ
+    to the ROV.
+
+    Args:
+        cmd (Command): command payload
+
+    Returns:
+        dict: success details
+    """
     if cmd.toSystem:
         cmd.value = bool(cmd.value)
     payload = {
@@ -26,10 +36,3 @@ def post_cmd(cmd: Command):
     }
     command_queue.put(payload)
     return {"code": "success", "sent": payload}
-
-
-""" 
-One could actually use the send / recv directly in the command-endpoints,
-therby redirecting the response received from the socket
-as a response to the post-endpoint is called
-"""

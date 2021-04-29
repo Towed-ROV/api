@@ -15,13 +15,11 @@ router = APIRouter()
 
 # FROM THE REMOTE TOWED-ROV
 data_queue_1 = Queue(maxsize=15)
-sensor_sub = SensorSubscriber(data_queue_1, host="192.168.1.118", port=8001)
-# sensor_sub.start()
+sensor_sub_1 = SensorSubscriber(data_queue_1, host="192.168.1.118", port=8001)
 
 # FROM THE LOCAL SUITCASE BOX
 data_queue_2 = Queue(maxsize=15)
-sensor_sub = SensorSubscriber(data_queue_2, host="192.168.1.118", port=8002)
-# sensor_sub.start()
+sensor_sub_2 = SensorSubscriber(data_queue_2, host="192.168.1.118", port=8002)
 
 # COLLECTS DATA AND PROCESSES DATA FROM ALL PUBLISHERS
 payload_receiver = PayloadReceiver()
@@ -34,10 +32,20 @@ is_recording = False
 exit_flag = threading.Event()
 saver_connection = DataSaverConnection()
 
+# @router.on_event("startup")
+# def startup_event():
+#     sensor_sub_1.start()
+#     sensor_sub_2.start()
+
+# @router.on_event("shutdown")
+# def startup_event():
+#     sensor_sub_1.join()
+#     sensor_sub_2.join()
+
 
 @router.get("/toggle_recording")
-def toggle_recording():
-    """starts recording the sensordata in csv""
+def toggle_csv_recorder():
+    """Starts recording the sensordata in csv""
 
     Returns:
         dict: wether the recording is running or not
@@ -56,7 +64,7 @@ def toggle_recording():
 
 
 @router.get('/live')
-async def sensor_data(request: Request):
+async def live_sensor_data_feed(request: Request):
     async def sensor_data_generator():
         """receives data through two ZMQ subscribers,
         and yields a EventSourceResponse for listeners to receive the sensordata stream

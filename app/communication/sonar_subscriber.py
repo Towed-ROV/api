@@ -53,7 +53,7 @@ class SonarSubscriber(Process):
         self.exit_flag = exit_flag
         self.SONAR_IMG_WIDTH = 1000
         self.SONAR_IMG_HEIGHT = 500
-        self.SONAR_IMG_WIDTH_HALF = 1000
+        self.SONAR_IMG_WIDTH_HALF = 500
         self.plotter = SonarPlotter(
             (self.SONAR_IMG_HEIGHT, self.SONAR_IMG_WIDTH))
 

@@ -16,7 +16,7 @@ router = APIRouter()
 exit_flag = Event()
 img_queue = Queue(maxsize=30)
 video_connection = VideoConnection("192.168.1.118", 1337, img_queue, exit_flag)
-sonar_connection = SonarConnection("127.0.0.1", 5555, img_queue, exit_flag)
+sonar_connection = SonarConnection("192.168.1.118", 5555, img_queue, exit_flag)
 
 # Video state
 S_DISPLAY_VIDEO = "video"
@@ -47,7 +47,7 @@ def save_img():
 
 @router.post("/preference")
 def video_preference(video_preference: VideoPreference):
-    """control method for toggle start/stop between streaming
+    """Control method for toggle start/stop between streaming
     the video-feed from the camera or the side scan sonar
 
     Args:
@@ -85,8 +85,8 @@ def video_preference(video_preference: VideoPreference):
 
 
 @router.get("/snap")
-def video_snapshot():
-    """store a snapshot of the moment the button was clicked,
+def trigger_image_snapshot():
+    """Store a snapshot of the moment the button was clicked,
     save either a side-scan-sonar image or a camera-photo
 
     Returns:
@@ -128,7 +128,7 @@ async def live_video_feed():
 
 @router.get("/{img_name}")
 def get_img_from_database(img_name: str):
-    """retrieves a image from the database,
+    """Retrieves a image from the database,
     specified by the param filename 
 
     Args:
