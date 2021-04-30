@@ -16,10 +16,12 @@ router = APIRouter()
 # FROM THE REMOTE TOWED-ROV
 data_queue_1 = Queue(maxsize=15)
 sensor_sub_1 = SensorSubscriber(data_queue_1, host="192.168.1.118", port=8001)
+sensor_sub_1.start()  
 
 # FROM THE LOCAL SUITCASE BOX
 data_queue_2 = Queue(maxsize=15)
 sensor_sub_2 = SensorSubscriber(data_queue_2, host="192.168.1.118", port=8002)
+sensor_sub_2.start()
 
 # COLLECTS DATA AND PROCESSES DATA FROM ALL PUBLISHERS
 payload_receiver = PayloadReceiver()
@@ -31,16 +33,6 @@ save_queue = None
 is_recording = False
 exit_flag = threading.Event()
 saver_connection = DataSaverConnection()
-
-# @router.on_event("startup")
-# def startup_event():
-#     sensor_sub_1.start()
-#     sensor_sub_2.start()
-
-# @router.on_event("shutdown")
-# def startup_event():
-#     sensor_sub_1.join()
-#     sensor_sub_2.join()
 
 
 @router.get("/toggle_recording")

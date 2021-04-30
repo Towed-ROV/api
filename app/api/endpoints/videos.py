@@ -16,7 +16,7 @@ router = APIRouter()
 exit_flag = Event()
 img_queue = Queue(maxsize=30)
 video_connection = VideoConnection("192.168.1.118", 1337, img_queue, exit_flag)
-sonar_connection = SonarConnection("192.168.1.118", 5555, img_queue, exit_flag)
+sonar_connection = SonarConnection("127.0.0.1", 5555, img_queue, exit_flag)
 
 # Video state
 S_DISPLAY_VIDEO = "video"
