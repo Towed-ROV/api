@@ -1,8 +1,8 @@
-# control-api
+# api
 
 ## Installation
 
-git clone, cd folder, then
+inside ./api
 ```bash
 # python3.6 ++
 python -m venv venv
