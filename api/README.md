@@ -2,7 +2,6 @@
 
 ## Installation
 
-inside ./api
 ```bash
 # python3.6 ++
 python -m venv venv
