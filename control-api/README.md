@@ -1,4 +1,4 @@
-# api
+# control-api
 
 ## Installation
 
