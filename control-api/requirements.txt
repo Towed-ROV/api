@@ -8,4 +8,4 @@ async-generator
 pandas
 sse-starlette
 aiofiles
-
+cmapy

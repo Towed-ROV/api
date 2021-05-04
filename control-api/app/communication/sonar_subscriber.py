@@ -1,13 +1,9 @@
-# from multiprocessing import Process, Event, Queue
-import struct
-import pickle
+from multiprocessing import Event, Process, Queue
+
+import cmapy
 import cv2
 import numpy as np
 import zmq
-import socket
-import queue
-from multiprocessing import Process, Queue, Event
-import time
 
 
 class SonarPlotter:
@@ -72,10 +68,10 @@ class SonarSubscriber(Process):
         while not self.exit_flag.is_set():
             msg_str = self.recv_str()       # receive raw string from C++
             row = self.msg_to_row(msg_str)  # process string into np.ndarray
-            # insert np.ndarray into top of image
-            img = self.row_to_img(row)
+            img = self.row_to_img(row)      # insert at top of image
+            img = self.process_img(img)     # get classic sonar colors
             self.data_queue.put(img)        # send image to client
-        print("EXITING")
+        print("[STOPPED] SonarSubscriber")
 
     def row_to_img(self, row: np.ndarray):
         return self.plotter.pop_push_and_get(row)
@@ -91,6 +87,10 @@ class SonarSubscriber(Process):
         arr[:self.SONAR_IMG_WIDTH_HALF] = left
         arr[self.SONAR_IMG_WIDTH_HALF:] = right
         return arr
+
+    def process_img(self, input_image):
+        img_colorized = cv2.applyColorMap(input_image, cmapy.cmap('copper'))
+        return cv2.convertScaleAbs(img_colorized, alpha=3, beta=0)
 
 
 if __name__ == "__main__":
