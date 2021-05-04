@@ -25,14 +25,25 @@ def send_command_to_rov(cmd: Command):
     Returns:
         dict: success details
     """
-    if cmd.toSystem:
-        cmd.value = bool(cmd.value)
-    payload = {
-        "payload_name": "commands",
-        "payload_data":  [{
-            "name": cmd.name,
-            "value": cmd.value
-        }]
-    }
+    if cmd.config:
+        payload = {
+            "payload_name": "settings",
+            "payload_data":  [{
+                "name": cmd.name,
+                "origin": cmd.origin,
+                "port": cmd.port
+            }]
+        }
+        print(payload)
+    else:
+        if cmd.toSystem:
+            cmd.value = bool(cmd.value)
+        payload = {
+            "payload_name": "commands",
+            "payload_data":  [{
+                "name": cmd.name,
+                "value": cmd.value
+            }]
+        }
     command_queue.put(payload)
     return {"code": "success", "sent": payload}

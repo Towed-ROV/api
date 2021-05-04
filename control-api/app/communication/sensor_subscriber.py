@@ -31,8 +31,12 @@ class SensorSubscriber(Process):
     def run(self):
         self.init()
         while True:
-            data = self.recv()
-            self.data_queue.put(data)
+            try:
+                data = self.recv()
+                self.data_queue.put(data)
+            except KeyboardInterrupt:
+                break
+        print("[STOPPED] SensorSubscriber")
 
 
 if __name__ == "__main__":

@@ -38,7 +38,8 @@ class CommandDispatcher(Thread):
                 self.cmd_queue.task_done()
                 _ = self.recv()            # Recv from ROV
             except KeyboardInterrupt:
-                pass
+                break
+        print("[STOPPED] CommandDispatcher")
 
 
 if __name__ == "__main__":

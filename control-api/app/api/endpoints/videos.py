@@ -21,12 +21,12 @@ sonar_connection = SonarConnection("127.0.0.1", 5555, img_queue, exit_flag)
 # Video state
 S_DISPLAY_VIDEO = "video"
 S_DISPLAY_SONAR = "sonar"
-S_DISPLAY_TYPE = S_DISPLAY_VIDEO  # DEFAULT
+S_DISPLAY_TYPE = None  # DEFAULT
 
 # Video folders
-TEST_IMAGE = "./tmp/test.png"
 TMP_FOLDER = "./tmp/"
 IMAGE_FOLDER = "./images/"
+OFFLINE_IMAGE = TMP_FOLDER + "offline.png"
 
 
 def save_img():
@@ -36,8 +36,11 @@ def save_img():
     Returns:
         str: filename of the image saved 
     """
-    img = img_queue.get()
-    # img = cv2.imread(TEST_IMAGE) # If using seed-database in Settings-page
+    global S_DISPLAY_TYPE
+    if S_DISPLAY_TYPE is not None:
+        img = img_queue.get()
+    else:
+        img = cv2.imread(OFFLINE_IMAGE)
     img_name = datetime.now().strftime("%d-%m-%Y %H_%M_%S.%f")[:-4]
     img_name += ".jpg"
     file_name = IMAGE_FOLDER + img_name

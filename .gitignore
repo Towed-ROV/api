@@ -132,3 +132,5 @@ app/tmp/test_image.jpg
 
 
 .vscode/settings.json
+
+*.jpg
