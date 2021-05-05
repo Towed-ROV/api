@@ -8,7 +8,7 @@ from schemas.command import Command
 router = APIRouter()
 command_queue = Queue()
 
-dispatcher = CommandDispatcher(command_queue, host="192.168.1.118", port=7001)
+dispatcher = CommandDispatcher(command_queue, host="127.0.0.1", port=6969)
 dispatcher.setDaemon(True)
 dispatcher.start()
 
