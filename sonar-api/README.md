@@ -5,6 +5,10 @@ In this guide, we will build and static link ZeroMQ on a Windows PC.
 
 As the Sonar API uses x86 architecture, we need to install the ZMQ library in the same format.
 
+## Requirements
+- Git
+- Visual Studio 2019
+
 ## Installation
 
 ##### 1. Build Vcpkg ( https://github.com/Microsoft/vcpkg )
