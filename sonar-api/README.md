@@ -77,3 +77,6 @@ Current 0MQ version is 4.3.X
 ```
 
 This install guide is similar to the one provided by Joshua Burkholder [[GUIDE]](https://joshuaburkholder.com/wordpress/2018/05/25/build-and-static-link-zeromq-on-windows/#step_2)
+
+## Usage
+Open the src-files in your created directory and run main.cpp
