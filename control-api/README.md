@@ -1,6 +1,9 @@
 # control-api
 This repository contains the REST-API used in the application layer of the total software system. The REST-API has responsibility for the communicating between the Surface Unit, Towed-ROV, Sonar API, the GUI and Database. In many ways, this repo is the glue holding the system safe and sound.
 
+
+![no_image](https://github.com/Towed-ROV/api/blob/main/control-api/docs/imgs/system.png?raw=true)
+
 ## Requirements
 - Python 3.6+
 
