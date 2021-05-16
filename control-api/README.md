@@ -11,7 +11,7 @@ This repository contains the REST-API used in the application layer of the total
 
 ```bash
 python -m venv venv
-venv/Scripts/activate
+venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
